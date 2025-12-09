@@ -183,10 +183,10 @@ class TeamRepository:
         """Get team by team ID (NN-NNNN format)."""
         session = get_session()
         try:
-                team = session.query(Team).options(
-                    joinedload(Team.members),
-                    joinedload(Team.creator)
-                ).filter(Team.team_id == team_id).first()
+            team = session.query(Team).options(
+                joinedload(Team.members),
+                joinedload(Team.creator)
+            ).filter(Team.team_id == team_id).first()
             if team:
                 session.expunge_all()
             return team
@@ -198,10 +198,10 @@ class TeamRepository:
         """Get team by database ID."""
         session = get_session()
         try:
-                team = session.query(Team).options(
-                    joinedload(Team.members),
-                    joinedload(Team.creator)
-                ).filter(Team.id == team_id).first()
+            team = session.query(Team).options(
+                joinedload(Team.members),
+                joinedload(Team.creator)
+            ).filter(Team.id == team_id).first()
             if team:
                 session.expunge_all()
             return team
@@ -213,10 +213,10 @@ class TeamRepository:
         """Get all teams."""
         session = get_session()
         try:
-                teams = session.query(Team).options(
-                    joinedload(Team.members),
-                    joinedload(Team.creator)
-                ).all()
+            teams = session.query(Team).options(
+                joinedload(Team.members),
+                joinedload(Team.creator)
+            ).all()
             if teams:
                 session.expunge_all()
             return teams

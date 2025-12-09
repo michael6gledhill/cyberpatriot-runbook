@@ -6,6 +6,10 @@ on:
       - main  # Trigger when you push to main branch
   workflow_dispatch:  # Allow manual trigger
 
+# Needed so actions-gh-pages can push to gh-pages
+permissions:
+  contents: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
