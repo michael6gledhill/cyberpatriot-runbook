@@ -28,7 +28,7 @@ jobs:
           mkdocs build --site-dir site  # replace with your build command if using Sphinx or others
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v7
+        uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./site

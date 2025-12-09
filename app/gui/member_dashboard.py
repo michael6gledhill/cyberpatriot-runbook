@@ -27,6 +27,8 @@ from app.database.repositories import (
     ReadMeRepository,
     NoteRepository,
     AuditLogRepository,
+    UserRepository,
+    TeamRepository,
 )
 from app.security import EncryptionManager
 
@@ -49,9 +51,14 @@ class MemberDashboard(QMainWindow):
 
         layout = QVBoxLayout()
 
-        # Top bar with logout button
+        # Top bar with logout button and status
         top_bar = self._create_top_bar()
         layout.addLayout(top_bar)
+
+        # Status message for team membership
+        self.status_label = QLabel()
+        self._update_team_status()
+        layout.addWidget(self.status_label)
 
         # Tab widget for different sections
         self.tab_widget = QTabWidget()
@@ -80,6 +87,32 @@ class MemberDashboard(QMainWindow):
         layout.addWidget(logout_button)
 
         return layout
+
+    def _update_team_status(self):
+        """Update team membership status message."""
+        try:
+            user = UserRepository.get_user_by_id(self.user["id"])
+            
+            if user and user.team_id:
+                team = user.team
+                if user.is_approved:
+                    self.status_label.setText(
+                        f"✓ You are a member of team: {team.name} ({team.team_id})"
+                    )
+                    self.status_label.setStyleSheet("color: green; font-weight: bold; padding: 5px;")
+                else:
+                    self.status_label.setText(
+                        f"⏳ Pending approval for team: {team.name} ({team.team_id}). Your coach has been notified and will approve your request soon."
+                    )
+                    self.status_label.setStyleSheet("color: orange; font-weight: bold; padding: 5px;")
+            else:
+                self.status_label.setText(
+                    "ℹ You are not yet part of a team. Please contact your coach to join or create a team."
+                )
+                self.status_label.setStyleSheet("color: blue; font-weight: bold; padding: 5px;")
+        except Exception as e:
+            self.status_label.setText(f"Error loading team status: {str(e)}")
+            self.status_label.setStyleSheet("color: red; padding: 5px;")
 
     def _create_checklist_tab(self) -> QWidget:
         """Create checklist tab."""

@@ -1,7 +1,7 @@
 """Database models for CyberPatriot Runbook."""
 
 from .base import Base
-from .user import User
+from .user import User, UserRole
 from .team import Team
 from .checklist import Checklist, ChecklistItem, ChecklistStatus
 from .readme import ReadMe
@@ -12,6 +12,7 @@ from .team_join_request import TeamJoinRequest, JoinRequestStatus
 __all__ = [
     "Base",
     "User",
+    "UserRole",
     "Team",
     "Checklist",
     "ChecklistItem",

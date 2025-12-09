@@ -21,10 +21,10 @@ class Team(Base):
     updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
-    members = relationship("User", back_populates="team", foreign_keys="[User.team_id]", cascade="all, delete-orphan")
+    members = relationship("User", back_populates="team", foreign_keys="User.team_id", viewonly=True)
     readmes = relationship("ReadMe", back_populates="team", cascade="all, delete-orphan")
     notes = relationship("Note", back_populates="team", cascade="all, delete-orphan")
-    creator = relationship("User", foreign_keys=[created_by_user_id], viewonly=True)
+    creator = relationship("User", back_populates="created_teams", foreign_keys=[created_by_user_id])
 
     def __repr__(self):
         return f"<Team(id={self.id}, name={self.name}, team_id={self.team_id}, division={self.division})>"

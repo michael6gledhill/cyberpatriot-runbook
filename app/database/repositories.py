@@ -1,7 +1,7 @@
 """Database access layer for models."""
 
 from typing import Optional, List
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.models.user import User, UserRole
@@ -25,13 +25,16 @@ class UserRepository:
         """Create a new user."""
         session = get_session()
         try:
+            # Convert UserRole enum to its string value if needed
+            role_value = role.value if isinstance(role, UserRole) else role
+            
             user = User(
                 name=name,
                 email=email,
                 password_hash=password_hash,
                 team_id=team_id,
-                role=role,
-                is_approved=(role == UserRole.ADMIN),  # Admins auto-approved
+                role=role_value,
+                is_approved=(role_value == UserRole.ADMIN.value),  # Admins auto-approved
             )
             session.add(user)
             session.commit()
@@ -47,7 +50,9 @@ class UserRepository:
         """Get user by email."""
         session = get_session()
         try:
-            user = session.query(User).filter(User.email == email).first()
+                user = session.query(User).options(joinedload(User.team)).filter(User.email == email).first()
+            if user:
+                session.expunge_all()
             return user
         finally:
             session.close()
@@ -57,7 +62,9 @@ class UserRepository:
         """Get user by ID."""
         session = get_session()
         try:
-            user = session.query(User).filter(User.id == user_id).first()
+                user = session.query(User).options(joinedload(User.team)).filter(User.id == user_id).first()
+            if user:
+                session.expunge_all()
             return user
         finally:
             session.close()
@@ -157,11 +164,11 @@ class TeamRepository:
     """Repository for team-related database operations."""
 
     @staticmethod
-    def create_team(name: str, team_id: str, division: str) -> Team:
+    def create_team(name: str, team_id: str, division: str, created_by_user_id: int) -> Team:
         """Create a new team."""
         session = get_session()
         try:
-            team = Team(name=name, team_id=team_id, division=division)
+            team = Team(name=name, team_id=team_id, division=division, created_by_user_id=created_by_user_id)
             session.add(team)
             session.commit()
             return team
@@ -176,7 +183,12 @@ class TeamRepository:
         """Get team by team ID (NN-NNNN format)."""
         session = get_session()
         try:
-            team = session.query(Team).filter(Team.team_id == team_id).first()
+                team = session.query(Team).options(
+                    joinedload(Team.members),
+                    joinedload(Team.creator)
+                ).filter(Team.team_id == team_id).first()
+            if team:
+                session.expunge_all()
             return team
         finally:
             session.close()
@@ -186,7 +198,12 @@ class TeamRepository:
         """Get team by database ID."""
         session = get_session()
         try:
-            team = session.query(Team).filter(Team.id == team_id).first()
+                team = session.query(Team).options(
+                    joinedload(Team.members),
+                    joinedload(Team.creator)
+                ).filter(Team.id == team_id).first()
+            if team:
+                session.expunge_all()
             return team
         finally:
             session.close()
@@ -196,7 +213,12 @@ class TeamRepository:
         """Get all teams."""
         session = get_session()
         try:
-            teams = session.query(Team).all()
+                teams = session.query(Team).options(
+                    joinedload(Team.members),
+                    joinedload(Team.creator)
+                ).all()
+            if teams:
+                session.expunge_all()
             return teams
         finally:
             session.close()
@@ -532,7 +554,15 @@ class AuditLogRepository:
         """Get recent audit logs."""
         session = get_session()
         try:
-            logs = session.query(AuditLog).order_by(AuditLog.created_at.desc()).limit(limit).all()
+            logs = (
+                session.query(AuditLog)
+                .options(joinedload(AuditLog.user))
+                .order_by(AuditLog.created_at.desc())
+                .limit(limit)
+                .all()
+            )
+            if logs:
+                session.expunge_all()
             return logs
         finally:
             session.close()

@@ -5,6 +5,7 @@ from PySide6.QtCore import Qt
 
 from app.gui.login_window import LoginWindow
 from app.gui.admin_dashboard import AdminDashboard
+from app.gui.coach_dashboard import CoachDashboard
 from app.gui.member_dashboard import MemberDashboard
 
 
@@ -39,6 +40,8 @@ class MainWindow(QStackedWidget):
         # Create appropriate dashboard based on role
         if user_data["role"] == "admin":
             self.current_dashboard = AdminDashboard(user_data)
+        elif user_data["role"] == "coach":
+            self.current_dashboard = CoachDashboard(user_data)
         else:
             self.current_dashboard = MemberDashboard(user_data)
 

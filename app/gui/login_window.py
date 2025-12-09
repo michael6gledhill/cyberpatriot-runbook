@@ -12,14 +12,12 @@ from PySide6.QtWidgets import (
     QComboBox,
     QMessageBox,
     QTabWidget,
-    QRadioButton,
-    QButtonGroup,
-    QScrollArea,
 )
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QFont
 
 from app.database.repositories import UserRepository, TeamRepository
+from app.models.user import UserRole
 from app.security import PasswordManager
 
 
@@ -99,32 +97,11 @@ class LoginWindow(QMainWindow):
         title.setFont(title_font)
         layout.addWidget(title)
 
-        # Account type selection (scrollable)
+        # Account type selection (dropdown)
         layout.addWidget(QLabel("Account Type:"))
-        account_type_scroll = QScrollArea()
-        account_type_scroll.setWidgetResizable(True)
-        account_type_widget = QWidget()
-        account_type_layout = QVBoxLayout()
-        
-        self.account_type_group = QButtonGroup()
-        account_types = [
-            ("Member", "member"),
-            ("Captain", "captain"),
-            ("Coach", "coach"),
-            ("Admin", "admin")
-        ]
-        for i, (label, value) in enumerate(account_types):
-            radio = QRadioButton(label)
-            radio.account_type_value = value
-            if i == 0:
-                radio.setChecked(True)
-            self.account_type_group.addButton(radio, i)
-            account_type_layout.addWidget(radio)
-        
-        account_type_widget.setLayout(account_type_layout)
-        account_type_scroll.setWidget(account_type_widget)
-        account_type_scroll.setMaximumHeight(120)
-        layout.addWidget(account_type_scroll)
+        self.signup_role = QComboBox()
+        self.signup_role.addItems(["Competitor", "Captain", "Coach", "Mentor", "Admin"])
+        layout.addWidget(self.signup_role)
 
         # Name field
         layout.addWidget(QLabel("Full Name:"))
@@ -152,12 +129,11 @@ class LoginWindow(QMainWindow):
         self.signup_confirm.setEchoMode(QLineEdit.Password)
         layout.addWidget(self.signup_confirm)
 
-        # Team ID field (hidden for admin/coach on signup)
+        # Team ID field (hidden for admin/mentor on signup)
         layout.addWidget(QLabel("Team ID (format: NN-NNNN):"))
         self.signup_team_id = QLineEdit()
-        self.signup_team_id.setPlaceholderText("e.g., 12-3456 (optional for Admin/Coach)")
+        self.signup_team_id.setPlaceholderText("e.g., 12-3456 (optional for Coach/Mentor/Admin)")
         layout.addWidget(self.signup_team_id)
-        self.team_id_label = layout.itemAt(layout.count() - 2).widget()
 
         # Signup button
         signup_button = QPushButton("Sign Up")
@@ -194,7 +170,7 @@ class LoginWindow(QMainWindow):
                 return
 
             # Check if user is approved (except for admins)
-            if user.role.value != "admin" and not user.is_approved:
+            if user.role != "admin" and not user.is_approved:
                 QMessageBox.warning(
                     self,
                     "Pending Approval",
@@ -207,7 +183,7 @@ class LoginWindow(QMainWindow):
                 "id": user.id,
                 "name": user.name,
                 "email": user.email,
-                "role": user.role.value,
+                "role": user.role,
                 "team_id": user.team_id,
                 "is_approved": user.is_approved,
             }
@@ -227,12 +203,18 @@ class LoginWindow(QMainWindow):
         confirm = self.signup_confirm.text()
         team_id_str = self.signup_team_id.text().strip()
 
-        # Get selected account type
-        selected_button = self.account_type_group.checkedButton()
-        if not selected_button:
-            QMessageBox.warning(self, "Input Error", "Please select an account type.")
-            return
-        role = selected_button.account_type_value
+        # Get selected account type from dropdown
+        role_display = self.signup_role.currentText().lower()
+        
+        # Map display names to role enum values
+        role_map = {
+            "competitor": "member",
+            "captain": "captain",
+            "coach": "coach",
+            "mentor": "coach",  # Mentor maps to coach role
+            "admin": "admin"
+        }
+        role_str = role_map.get(role_display, "member")
 
         # Validation
         if not all([name, email, password, confirm]):
@@ -253,11 +235,11 @@ class LoginWindow(QMainWindow):
             QMessageBox.warning(self, "Email Exists", "An account with this email already exists.")
             return
 
-        # For non-admin/coach users, team ID is required
+        # For competitor/captain users, team ID is required
         team = None
-        if role in ["member", "captain"]:
+        if role_str in ["member", "captain"]:
             if not team_id_str:
-                QMessageBox.warning(self, "Team Required", "Team ID is required for members and captains.")
+                QMessageBox.warning(self, "Team Required", "Team ID is required for competitors and captains.")
                 return
             
             # Verify team ID exists
@@ -270,27 +252,42 @@ class LoginWindow(QMainWindow):
             # Hash password
             password_hash = PasswordManager.hash_password(password)
 
+            # Convert string role to UserRole enum
+            role_enum = UserRole(role_str)
+
             # Create user
             new_user = UserRepository.create_user(
                 name=name,
                 email=email,
                 password_hash=password_hash,
                 team_id=team.id if team else None,
-                role=role
+                role=role_enum
             )
 
-            if role in ["admin", "coach"]:
+            if role_str in ["admin", "coach"]:
                 message = (
-                    f"Your {role.capitalize()} account has been created successfully!\n"
+                    f"Your {role_display.capitalize()} account has been created successfully!\n"
                     f"You can now log in and create teams."
                 )
+                # For admin/coach/mentor, auto-approve and emit login signal
+                QMessageBox.information(self, "Account Created", message)
+                
+                # Auto-login admin/coach/mentor
+                user_data = {
+                    "id": new_user.id,
+                    "name": new_user.name,
+                    "email": new_user.email,
+                    "role": new_user.role.value,
+                    "team_id": new_user.team_id,
+                    "is_approved": new_user.is_approved,
+                }
+                self.login_successful.emit(user_data)
             else:
                 message = (
                     f"Your account has been created and is pending approval.\n"
-                    f"Your team captain will review your request."
+                    f"Your team coach will review your request soon."
                 )
-
-            QMessageBox.information(self, "Account Created", message)
+                QMessageBox.information(self, "Account Created", message)
 
             # Clear fields
             self.signup_name.clear()
@@ -299,10 +296,14 @@ class LoginWindow(QMainWindow):
             self.signup_confirm.clear()
             self.signup_team_id.clear()
 
-            # Switch to login tab
-            self.tab_widget.setCurrentIndex(0)
+            # Switch to login tab if not auto-logged in
+            if role_str not in ["admin", "coach"]:
+                self.tab_widget.setCurrentIndex(0)
 
         except Exception as e:
+            import traceback
+            error_msg = f"An error occurred during signup: {str(e)}\n\n{traceback.format_exc()}"
+            print(error_msg)
             QMessageBox.critical(self, "Error", f"An error occurred during signup: {str(e)}")
 
     def _get_stylesheet(self) -> str:
