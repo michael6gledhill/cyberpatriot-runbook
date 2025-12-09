@@ -194,7 +194,7 @@ class AdminController:
         """
         from app.database.repositories import AuditLogRepository
 
-        team = TeamRepository.create_team(name, team_id, division)
+        team = TeamRepository.create_team(name, team_id, division, admin_id)
         AuditLogRepository.log_action(admin_id, "create_team", "team", team.id)
 
         return {

@@ -333,7 +333,7 @@ class AdminDashboard(QMainWindow):
 
     def _show_create_team_dialog(self):
         """Show create team dialog."""
-        dialog = CreateTeamDialog(self)
+        dialog = CreateTeamDialog(self, self.admin_user["id"])
         if dialog.exec() == QDialog.Accepted:
             self._refresh_teams_table()
 
@@ -488,8 +488,9 @@ class AdminDashboard(QMainWindow):
 class CreateTeamDialog(QDialog):
     """Dialog for creating a new team."""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, admin_id: int | None = None):
         super().__init__(parent)
+        self.admin_id = admin_id
         self.setWindowTitle("Create Team")
         self.setGeometry(200, 200, 400, 250)
         self._init_ui()
@@ -537,7 +538,9 @@ class CreateTeamDialog(QDialog):
                 QMessageBox.warning(self, "Duplicate", "Team ID already exists.")
                 return
 
-            TeamRepository.create_team(name, team_id, division)
+            # Default creator to the admin opening this dialog
+            creator_id = self.admin_id or 0
+            TeamRepository.create_team(name, team_id, division, creator_id)
             QMessageBox.information(self, "Success", "Team created successfully.")
             self.accept()
         except Exception as e:

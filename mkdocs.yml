@@ -1,0 +1,7 @@
+site_name: CyberPatriot Runbook Docs
+site_url: https://michael6gledhill.github.io/cyberpatriot-runbook/
+docs_dir: docs
+theme:
+  name: material
+nav:
+  - Home: index.md
