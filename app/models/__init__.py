@@ -7,6 +7,7 @@ from .checklist import Checklist, ChecklistItem, ChecklistStatus
 from .readme import ReadMe
 from .note import Note
 from .audit_log import AuditLog
+from .team_join_request import TeamJoinRequest, JoinRequestStatus
 
 __all__ = [
     "Base",
@@ -18,4 +19,6 @@ __all__ = [
     "ReadMe",
     "Note",
     "AuditLog",
+    "TeamJoinRequest",
+    "JoinRequestStatus",
 ]

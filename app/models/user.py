@@ -34,11 +34,14 @@ class User(Base):
     updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
-    team = relationship("Team", back_populates="members")
+    team = relationship("Team", back_populates="members", foreign_keys=[team_id])
+    created_teams = relationship("Team", back_populates="creator")
     readmes = relationship("ReadMe", back_populates="author", cascade="all, delete-orphan")
     notes = relationship("Note", back_populates="author", cascade="all, delete-orphan")
     checklist_status = relationship("ChecklistStatus", back_populates="user", cascade="all, delete-orphan")
     audit_logs = relationship("AuditLog", back_populates="user", cascade="all, delete-orphan")
+    join_requests = relationship("TeamJoinRequest", back_populates="requester", foreign_keys="[TeamJoinRequest.requester_user_id]")
+    team_join_requests = relationship("TeamJoinRequest", back_populates="team_creator", foreign_keys="[TeamJoinRequest.team_creator_user_id]")
 
     def __repr__(self):
         return f"<User(id={self.id}, name={self.name}, email={self.email}, role={self.role})>"

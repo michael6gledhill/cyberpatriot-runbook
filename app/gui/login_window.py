@@ -12,6 +12,9 @@ from PySide6.QtWidgets import (
     QComboBox,
     QMessageBox,
     QTabWidget,
+    QRadioButton,
+    QButtonGroup,
+    QScrollArea,
 )
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QFont
@@ -96,6 +99,33 @@ class LoginWindow(QMainWindow):
         title.setFont(title_font)
         layout.addWidget(title)
 
+        # Account type selection (scrollable)
+        layout.addWidget(QLabel("Account Type:"))
+        account_type_scroll = QScrollArea()
+        account_type_scroll.setWidgetResizable(True)
+        account_type_widget = QWidget()
+        account_type_layout = QVBoxLayout()
+        
+        self.account_type_group = QButtonGroup()
+        account_types = [
+            ("Member", "member"),
+            ("Captain", "captain"),
+            ("Coach", "coach"),
+            ("Admin", "admin")
+        ]
+        for i, (label, value) in enumerate(account_types):
+            radio = QRadioButton(label)
+            radio.account_type_value = value
+            if i == 0:
+                radio.setChecked(True)
+            self.account_type_group.addButton(radio, i)
+            account_type_layout.addWidget(radio)
+        
+        account_type_widget.setLayout(account_type_layout)
+        account_type_scroll.setWidget(account_type_widget)
+        account_type_scroll.setMaximumHeight(120)
+        layout.addWidget(account_type_scroll)
+
         # Name field
         layout.addWidget(QLabel("Full Name:"))
         self.signup_name = QLineEdit()
@@ -122,17 +152,12 @@ class LoginWindow(QMainWindow):
         self.signup_confirm.setEchoMode(QLineEdit.Password)
         layout.addWidget(self.signup_confirm)
 
-        # Role selection
-        layout.addWidget(QLabel("Requested Role:"))
-        self.signup_role = QComboBox()
-        self.signup_role.addItems(["Member", "Captain", "Coach"])
-        layout.addWidget(self.signup_role)
-
-        # Team ID field
+        # Team ID field (hidden for admin/coach on signup)
         layout.addWidget(QLabel("Team ID (format: NN-NNNN):"))
         self.signup_team_id = QLineEdit()
-        self.signup_team_id.setPlaceholderText("e.g., 12-3456")
+        self.signup_team_id.setPlaceholderText("e.g., 12-3456 (optional for Admin/Coach)")
         layout.addWidget(self.signup_team_id)
+        self.team_id_label = layout.itemAt(layout.count() - 2).widget()
 
         # Signup button
         signup_button = QPushButton("Sign Up")
@@ -200,12 +225,18 @@ class LoginWindow(QMainWindow):
         email = self.signup_email.text().strip()
         password = self.signup_password.text()
         confirm = self.signup_confirm.text()
-        role = self.signup_role.currentText().lower()
         team_id_str = self.signup_team_id.text().strip()
 
+        # Get selected account type
+        selected_button = self.account_type_group.checkedButton()
+        if not selected_button:
+            QMessageBox.warning(self, "Input Error", "Please select an account type.")
+            return
+        role = selected_button.account_type_value
+
         # Validation
-        if not all([name, email, password, confirm, team_id_str]):
-            QMessageBox.warning(self, "Input Error", "Please fill in all fields.")
+        if not all([name, email, password, confirm]):
+            QMessageBox.warning(self, "Input Error", "Please fill in all required fields.")
             return
 
         if password != confirm:
@@ -222,27 +253,44 @@ class LoginWindow(QMainWindow):
             QMessageBox.warning(self, "Email Exists", "An account with this email already exists.")
             return
 
-        # Verify team ID exists
-        team = TeamRepository.get_team_by_team_id(team_id_str)
-        if not team:
-            QMessageBox.warning(self, "Team Not Found", f"Team ID '{team_id_str}' does not exist.")
-            return
+        # For non-admin/coach users, team ID is required
+        team = None
+        if role in ["member", "captain"]:
+            if not team_id_str:
+                QMessageBox.warning(self, "Team Required", "Team ID is required for members and captains.")
+                return
+            
+            # Verify team ID exists
+            team = TeamRepository.get_team_by_team_id(team_id_str)
+            if not team:
+                QMessageBox.warning(self, "Team Not Found", f"Team ID '{team_id_str}' does not exist.")
+                return
 
         try:
             # Hash password
             password_hash = PasswordManager.hash_password(password)
 
-            # Create user (pending approval)
+            # Create user
             new_user = UserRepository.create_user(
-                name=name, email=email, password_hash=password_hash, team_id=team.id, role=role
+                name=name,
+                email=email,
+                password_hash=password_hash,
+                team_id=team.id if team else None,
+                role=role
             )
 
-            QMessageBox.information(
-                self,
-                "Account Created",
-                f"Your account has been created and is pending approval.\n"
-                f"Your team captain will review your request.",
-            )
+            if role in ["admin", "coach"]:
+                message = (
+                    f"Your {role.capitalize()} account has been created successfully!\n"
+                    f"You can now log in and create teams."
+                )
+            else:
+                message = (
+                    f"Your account has been created and is pending approval.\n"
+                    f"Your team captain will review your request."
+                )
+
+            QMessageBox.information(self, "Account Created", message)
 
             # Clear fields
             self.signup_name.clear()

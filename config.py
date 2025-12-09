@@ -1,7 +1,11 @@
 # CyberPatriot Runbook - Configuration
 
 # Database Settings
-DATABASE_URL = "mysql+pymysql://root:password@localhost:3306/cyberpatriot_runbook"
+# MySQL production configuration
+DATABASE_URL = "mysql+pymysql://root:h0gBog89!@localhost:3306/cyberpatriot_runbook"
+
+# For SQLite development/testing, use:
+# DATABASE_URL = "sqlite:///cyberpatriot_runbook.db"
 
 # Application Settings
 APP_NAME = "CyberPatriot Runbook"

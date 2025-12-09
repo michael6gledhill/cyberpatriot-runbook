@@ -14,7 +14,7 @@ def main():
         # Initialize database
         db_url = os.getenv(
             "DATABASE_URL",
-            "mysql+pymysql://root:password@localhost:3306/cyberpatriot_runbook"
+            "mysql+pymysql://root:h0gBog89!@localhost:3306/cyberpatriot_runbook"
         )
 
         print(f"Initializing database: {db_url}")

@@ -10,6 +10,7 @@ from app.models.checklist import Checklist, ChecklistItem, ChecklistStatus
 from app.models.readme import ReadMe
 from app.models.note import Note
 from app.models.audit_log import AuditLog
+from app.models.team_join_request import TeamJoinRequest, JoinRequestStatus
 
 from . import get_session
 
@@ -533,5 +534,140 @@ class AuditLogRepository:
         try:
             logs = session.query(AuditLog).order_by(AuditLog.created_at.desc()).limit(limit).all()
             return logs
+        finally:
+            session.close()
+
+
+class TeamJoinRequestRepository:
+    """Repository for team join request operations."""
+
+    @staticmethod
+    def create_request(
+        team_id: int, requester_user_id: int, team_creator_user_id: int, message: Optional[str] = None
+    ) -> TeamJoinRequest:
+        """Create a new team join request."""
+        session = get_session()
+        try:
+            request = TeamJoinRequest(
+                team_id=team_id,
+                requester_user_id=requester_user_id,
+                team_creator_user_id=team_creator_user_id,
+                status=JoinRequestStatus.PENDING,
+                message=message,
+            )
+            session.add(request)
+            session.commit()
+            return request
+        except SQLAlchemyError as e:
+            session.rollback()
+            raise Exception(f"Error creating team join request: {str(e)}")
+        finally:
+            session.close()
+
+    @staticmethod
+    def get_request_by_id(request_id: int) -> Optional[TeamJoinRequest]:
+        """Get team join request by ID."""
+        session = get_session()
+        try:
+            request = session.query(TeamJoinRequest).filter(TeamJoinRequest.id == request_id).first()
+            return request
+        finally:
+            session.close()
+
+    @staticmethod
+    def get_pending_requests_for_team(team_id: int) -> List[TeamJoinRequest]:
+        """Get all pending join requests for a team."""
+        session = get_session()
+        try:
+            requests = (
+                session.query(TeamJoinRequest)
+                .filter(TeamJoinRequest.team_id == team_id, TeamJoinRequest.status == JoinRequestStatus.PENDING)
+                .all()
+            )
+            return requests
+        finally:
+            session.close()
+
+    @staticmethod
+    def get_pending_requests_for_user(requester_user_id: int) -> List[TeamJoinRequest]:
+        """Get all pending join requests made by a user."""
+        session = get_session()
+        try:
+            requests = (
+                session.query(TeamJoinRequest)
+                .filter(
+                    TeamJoinRequest.requester_user_id == requester_user_id,
+                    TeamJoinRequest.status == JoinRequestStatus.PENDING,
+                )
+                .all()
+            )
+            return requests
+        finally:
+            session.close()
+
+    @staticmethod
+    def check_request_exists(team_id: int, requester_user_id: int) -> Optional[TeamJoinRequest]:
+        """Check if a join request already exists for this team/user."""
+        session = get_session()
+        try:
+            request = (
+                session.query(TeamJoinRequest)
+                .filter(
+                    TeamJoinRequest.team_id == team_id, TeamJoinRequest.requester_user_id == requester_user_id
+                )
+                .first()
+            )
+            return request
+        finally:
+            session.close()
+
+    @staticmethod
+    def approve_request(request_id: int) -> bool:
+        """Approve a join request."""
+        session = get_session()
+        try:
+            request = session.query(TeamJoinRequest).filter(TeamJoinRequest.id == request_id).first()
+            if request:
+                request.status = JoinRequestStatus.APPROVED
+                session.commit()
+                return True
+            return False
+        except SQLAlchemyError as e:
+            session.rollback()
+            raise Exception(f"Error approving join request: {str(e)}")
+        finally:
+            session.close()
+
+    @staticmethod
+    def reject_request(request_id: int) -> bool:
+        """Reject a join request."""
+        session = get_session()
+        try:
+            request = session.query(TeamJoinRequest).filter(TeamJoinRequest.id == request_id).first()
+            if request:
+                request.status = JoinRequestStatus.REJECTED
+                session.commit()
+                return True
+            return False
+        except SQLAlchemyError as e:
+            session.rollback()
+            raise Exception(f"Error rejecting join request: {str(e)}")
+        finally:
+            session.close()
+
+    @staticmethod
+    def delete_request(request_id: int) -> bool:
+        """Delete a join request."""
+        session = get_session()
+        try:
+            request = session.query(TeamJoinRequest).filter(TeamJoinRequest.id == request_id).first()
+            if request:
+                session.delete(request)
+                session.commit()
+                return True
+            return False
+        except SQLAlchemyError as e:
+            session.rollback()
+            raise Exception(f"Error deleting join request: {str(e)}")
         finally:
             session.close()
