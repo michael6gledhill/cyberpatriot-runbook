@@ -1,6 +1,7 @@
 """Login window for CyberPatriot Runbook application."""
 
 from PySide6.QtWidgets import (
+    QApplication,
     QMainWindow,
     QWidget,
     QVBoxLayout,
@@ -75,10 +76,14 @@ class LoginWindow(QMainWindow):
         layout.addWidget(self.login_password)
 
         # Login button
-        login_button = QPushButton("Login")
-        login_button.setMinimumHeight(40)
-        login_button.clicked.connect(self._handle_login)
-        layout.addWidget(login_button)
+        self.login_button = QPushButton("Login")
+        self.login_button.setMinimumHeight(40)
+        self.login_button.setDefault(True)  # Pressing Enter triggers login
+        self.login_button.clicked.connect(self._handle_login)
+        # Hitting Enter in either field triggers the login button
+        self.login_email.returnPressed.connect(self.login_button.click)
+        self.login_password.returnPressed.connect(self.login_button.click)
+        layout.addWidget(self.login_button)
 
         layout.addStretch()
         widget.setLayout(layout)
@@ -151,30 +156,30 @@ class LoginWindow(QMainWindow):
         password = self.login_password.text()
 
         if not email or not password:
-            QMessageBox.warning(self, "Input Error", "Please enter both email and password.")
+            self._show_message("Input Error", "Please enter both email and password.", QMessageBox.Warning)
             return
 
         try:
             user = UserRepository.get_user_by_email(email)
 
             if not user:
-                QMessageBox.warning(self, "Login Failed", "User not found.")
+                self._show_message("Login Failed", "User not found.", QMessageBox.Warning)
                 return
 
             if not PasswordManager.verify_password(password, user.password_hash):
-                QMessageBox.warning(self, "Login Failed", "Invalid password.")
+                self._show_message("Login Failed", "Invalid password.", QMessageBox.Warning)
                 return
 
             if not user.is_active:
-                QMessageBox.warning(self, "Account Inactive", "Your account has been deactivated.")
+                self._show_message("Account Inactive", "Your account has been deactivated.", QMessageBox.Warning)
                 return
 
             # Check if user is approved (except for admins)
             if user.role != "admin" and not user.is_approved:
-                QMessageBox.warning(
-                    self,
+                self._show_message(
                     "Pending Approval",
                     "Your account is pending admin approval. Please wait for your team captain to approve your access.",
+                    QMessageBox.Warning,
                 )
                 return
 
@@ -193,7 +198,23 @@ class LoginWindow(QMainWindow):
             self.login_password.clear()
 
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"An error occurred during login: {str(e)}")
+            self._show_message("Error", f"An error occurred during login: {str(e)}", QMessageBox.Critical)
+
+    def _show_message(self, title: str, message: str, icon: QMessageBox.Icon = QMessageBox.Information):
+        """Show a message box with selectable text and a copy button."""
+        box = QMessageBox(self)
+        box.setIcon(icon)
+        box.setWindowTitle(title)
+        box.setTextInteractionFlags(Qt.TextSelectableByMouse | Qt.TextSelectableByKeyboard)
+        box.setText(message)
+
+        copy_btn = box.addButton("Copy", QMessageBox.ActionRole)
+        ok_btn = box.addButton(QMessageBox.Ok)
+        box.setDefaultButton(ok_btn)
+        box.exec()
+
+        if box.clickedButton() == copy_btn:
+            QApplication.clipboard().setText(message)
 
     def _handle_signup(self):
         """Handle signup button click."""
@@ -218,34 +239,34 @@ class LoginWindow(QMainWindow):
 
         # Validation
         if not all([name, email, password, confirm]):
-            QMessageBox.warning(self, "Input Error", "Please fill in all required fields.")
+            self._show_message("Input Error", "Please fill in all required fields.", QMessageBox.Warning)
             return
 
         if password != confirm:
-            QMessageBox.warning(self, "Password Mismatch", "Passwords do not match.")
+            self._show_message("Password Mismatch", "Passwords do not match.", QMessageBox.Warning)
             return
 
         if len(password) < 8:
-            QMessageBox.warning(self, "Weak Password", "Password must be at least 8 characters long.")
+            self._show_message("Weak Password", "Password must be at least 8 characters long.", QMessageBox.Warning)
             return
 
         # Check if email already exists
         existing_user = UserRepository.get_user_by_email(email)
         if existing_user:
-            QMessageBox.warning(self, "Email Exists", "An account with this email already exists.")
+            self._show_message("Email Exists", "An account with this email already exists.", QMessageBox.Warning)
             return
 
         # For competitor/captain users, team ID is required
         team = None
         if role_str in ["member", "captain"]:
             if not team_id_str:
-                QMessageBox.warning(self, "Team Required", "Team ID is required for competitors and captains.")
+                self._show_message("Team Required", "Team ID is required for competitors and captains.", QMessageBox.Warning)
                 return
             
             # Verify team ID exists
             team = TeamRepository.get_team_by_team_id(team_id_str)
             if not team:
-                QMessageBox.warning(self, "Team Not Found", f"Team ID '{team_id_str}' does not exist.")
+                self._show_message("Team Not Found", f"Team ID '{team_id_str}' does not exist.", QMessageBox.Warning)
                 return
 
         try:
@@ -268,7 +289,7 @@ class LoginWindow(QMainWindow):
                 message = (
                     f"Your {role_display.capitalize()} account has been created successfully!\n"
                     f"You can now log in and create teams."
-                )
+                self._show_message("Account Created", message, QMessageBox.Information)
                 # For admin/coach/mentor, auto-approve and emit login signal
                 QMessageBox.information(self, "Account Created", message)
                 
@@ -285,7 +306,7 @@ class LoginWindow(QMainWindow):
             else:
                 message = (
                     f"Your account has been created and is pending approval.\n"
-                    f"Your team coach will review your request soon."
+                self._show_message("Account Created", message, QMessageBox.Information)
                 )
                 QMessageBox.information(self, "Account Created", message)
 
@@ -302,7 +323,7 @@ class LoginWindow(QMainWindow):
 
         except Exception as e:
             import traceback
-            error_msg = f"An error occurred during signup: {str(e)}\n\n{traceback.format_exc()}"
+            self._show_message("Error", f"An error occurred during signup: {str(e)}", QMessageBox.Critical)
             print(error_msg)
             QMessageBox.critical(self, "Error", f"An error occurred during signup: {str(e)}")
 

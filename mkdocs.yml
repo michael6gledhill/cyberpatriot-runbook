@@ -5,3 +5,11 @@ theme:
   name: material
 nav:
   - Home: index.md
+  - Overview: overview.md
+  - Setup: setup.md
+  - Usage Guide: usage.md
+  - Roles & Permissions: roles.md
+  - Teams & Requests: teams.md
+  - Dashboards: dashboards.md
+  - Security Notes: security.md
+  - Troubleshooting: troubleshooting.md
