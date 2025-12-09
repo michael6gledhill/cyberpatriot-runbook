@@ -50,7 +50,7 @@ class UserRepository:
         """Get user by email."""
         session = get_session()
         try:
-                user = session.query(User).options(joinedload(User.team)).filter(User.email == email).first()
+            user = session.query(User).options(joinedload(User.team)).filter(User.email == email).first()
             if user:
                 session.expunge_all()
             return user
@@ -62,7 +62,7 @@ class UserRepository:
         """Get user by ID."""
         session = get_session()
         try:
-                user = session.query(User).options(joinedload(User.team)).filter(User.id == user_id).first()
+            user = session.query(User).options(joinedload(User.team)).filter(User.id == user_id).first()
             if user:
                 session.expunge_all()
             return user

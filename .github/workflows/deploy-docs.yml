@@ -23,9 +23,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install mkdocs mkdocs-material  # or any doc generator you use
 
-      - name: Build documentation
+      - name: Build documentation (skip if mkdocs.yml missing)
         run: |
-          mkdocs build --site-dir site  # replace with your build command if using Sphinx or others
+          if [ -f mkdocs.yml ]; then
+            mkdocs build --site-dir site
+          else
+            echo "mkdocs.yml not found; creating placeholder site"
+            mkdir -p site
+            echo "<html><body><h1>Docs not configured</h1><p>Add mkdocs.yml to enable docs build.</p></body></html>" > site/index.html
+          fi
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
