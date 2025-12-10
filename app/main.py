@@ -1,14 +1,26 @@
 """
 Entry point for the PySide6 app.
 Provides a basic stacked UI with Login, Signup, and Dashboard skeletons.
+
+Supports both `python -m app` and direct path execution by fixing imports
+when no package context is present.
 """
 from PySide6.QtWidgets import QApplication, QStackedWidget
 import sys
+import os
 
-from .ui.login import LoginWidget
-from .ui.signup import SignupWidget
-from .ui.dashboard import DashboardWidget
-from .db import init_db
+# Allow running via direct file path (no package context)
+if __package__ is None or __package__ == "":
+    sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+    from app.ui.login import LoginWidget
+    from app.ui.signup import SignupWidget
+    from app.ui.dashboard import DashboardWidget
+    from app.db import init_db
+else:
+    from .ui.login import LoginWidget
+    from .ui.signup import SignupWidget
+    from .ui.dashboard import DashboardWidget
+    from .db import init_db
 
 
 def build_app() -> QStackedWidget:
