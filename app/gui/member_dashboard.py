@@ -1,9 +1,9 @@
+from PySide6.QtWidgets import QVBoxLayout as QtQVBoxLayout
 """Member dashboard for CyberPatriot Runbook."""
 
 from PySide6.QtWidgets import (
     QMainWindow,
     QWidget,
-    QVBoxLayout,
     QHBoxLayout,
     QTabWidget,
     QLabel,
@@ -49,7 +49,7 @@ class MemberDashboard(QMainWindow):
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
 
-        layout = QVBoxLayout()
+        layout = QtQVBoxLayout()
 
         # Top bar with logout button and status
         top_bar = self._create_top_bar()
@@ -61,17 +61,140 @@ class MemberDashboard(QMainWindow):
         layout.addWidget(self.status_label)
 
         # Tab widget for different sections
+
         self.tab_widget = QTabWidget()
         self.checklist_tab = self._create_checklist_tab()
         self.readme_tab = self._create_readme_tab()
         self.notes_tab = self._create_notes_tab()
+        self.members_tab = self._create_team_members_tab()
+        self.join_requests_tab = self._create_join_requests_tab()
 
+        # All members see checklists, READMEs, and notes
         self.tab_widget.addTab(self.checklist_tab, "Checklists")
         self.tab_widget.addTab(self.readme_tab, "READMEs")
         self.tab_widget.addTab(self.notes_tab, "Notes")
 
-        layout.addWidget(self.tab_widget)
+        # Captains see team members and join requests
+        if self.user["role"].lower() == "captain":
+            self.tab_widget.addTab(self.members_tab, "Team Members")
+            self.tab_widget.addTab(self.join_requests_tab, "Join Requests")
+        # Regular members only see join requests (to request to join a team)
+        elif self.user["role"].lower() == "member":
+            self.tab_widget.addTab(self.join_requests_tab, "Join Requests")
+
         self.central_widget.setLayout(layout)
+    def _create_team_members_tab(self) -> QWidget:
+        widget = QWidget()
+        layout = QtQVBoxLayout()
+        table = QTableWidget()
+        table.setColumnCount(3)
+        table.setHorizontalHeaderLabels(["Name", "Email", "Role"])
+        members = []
+        try:
+            from app.database.repositories import UserRepository, TeamRepository
+            # Fetch current user and their team with members via repositories
+            user = UserRepository.get_user_by_id(self.user["id"])  
+            team = TeamRepository.get_team_by_id(user.team_id) if user and user.team_id else None
+            if team and team.members:
+                members = team.members
+        except Exception as e:
+            # Show error in a copyable text box
+            from PySide6.QtWidgets import QTextEdit, QDialog, QVBoxLayout, QPushButton
+            error_dialog = QDialog(self)
+            error_dialog.setWindowTitle("Error")
+            error_layout = QVBoxLayout()
+            error_box = QTextEdit()
+            error_box.setReadOnly(True)
+            error_box.setText(str(e))
+            error_layout.addWidget(error_box)
+            ok_btn = QPushButton("OK")
+            ok_btn.clicked.connect(error_dialog.accept)
+            error_layout.addWidget(ok_btn)
+            error_dialog.setLayout(error_layout)
+            error_dialog.exec()
+        table.setRowCount(len(members))
+        for row, member in enumerate(members):
+            table.setItem(row, 0, QTableWidgetItem(member.name))
+            table.setItem(row, 1, QTableWidgetItem(member.email))
+            table.setItem(row, 2, QTableWidgetItem(str(member.role)))
+        layout.addWidget(table)
+        widget.setLayout(layout)
+        return widget
+
+    def _create_join_requests_tab(self) -> QWidget:
+        widget = QWidget()
+        layout = QtQVBoxLayout()
+        table = QTableWidget()
+        table.setColumnCount(5)
+        table.setHorizontalHeaderLabels(["Name", "Email", "Role", "Approve", "Reject"])
+        requests = []
+        try:
+            user = UserRepository.get_user_by_id(self.user["id"])
+            if user and user.team_id:
+                from app.database.repositories import TeamJoinRequestRepository, UserRepository
+                requests = TeamJoinRequestRepository.get_pending_requests_for_team(user.team_id)
+        except Exception as e:
+            pass
+        table.setRowCount(len(requests))
+        for row, req in enumerate(requests):
+            # Only allow captain to approve competitors (not other captains/coaches)
+            requester = None
+            try:
+                requester = UserRepository.get_user_by_id(req.requester_user_id)
+            except Exception:
+                pass
+            if not requester:
+                continue
+            # Only show requests for roles below captain
+            if self.user["role"] == "captain" and requester.role not in ["member", "competitor"]:
+                continue
+            table.setItem(row, 0, QTableWidgetItem(requester.name))
+            table.setItem(row, 1, QTableWidgetItem(requester.email))
+            table.setItem(row, 2, QTableWidgetItem(str(requester.role)))
+            approve_btn = QPushButton("Approve")
+            reject_btn = QPushButton("Reject")
+            approve_btn.clicked.connect(lambda checked, rid=req.id: self._approve_join_request(rid))
+            reject_btn.clicked.connect(lambda checked, rid=req.id: self._reject_join_request(rid))
+            table.setCellWidget(row, 3, approve_btn)
+            table.setCellWidget(row, 4, reject_btn)
+        layout.addWidget(table)
+        widget.setLayout(layout)
+        return widget
+
+    def _approve_join_request(self, request_id):
+        from app.database.repositories import TeamJoinRequestRepository
+        TeamJoinRequestRepository.approve_request(request_id)
+        QMessageBox.information(self, "Success", "Request approved.")
+        # Refresh the team members and join requests tabs
+        self._refresh_tabs()
+
+    def _reject_join_request(self, request_id):
+        from app.database.repositories import TeamJoinRequestRepository
+        TeamJoinRequestRepository.reject_request(request_id)
+        QMessageBox.information(self, "Success", "Request rejected.")
+        self._refresh_tabs()
+
+    def _refresh_tabs(self):
+        # Remove and re-add the Team Members and Join Requests tabs to refresh their content
+        members_idx = self.tab_widget.indexOf(self.members_tab)
+        join_idx = self.tab_widget.indexOf(self.join_requests_tab)
+        self.tab_widget.removeTab(join_idx)
+        self.tab_widget.removeTab(members_idx)
+        self.members_tab = self._create_team_members_tab()
+        self.join_requests_tab = self._create_join_requests_tab()
+        self.tab_widget.insertTab(members_idx, self.members_tab, "Team Members")
+        self.tab_widget.insertTab(join_idx, self.join_requests_tab, "Join Requests")
+        self.tab_widget.insertTab(3, self.members_tab, "Team Members")
+        self.tab_widget.removeTab(4)
+        self.tab_widget.insertTab(4, self.join_requests_tab, "Join Requests")
+
+    def _reject_join_request(self, request_id):
+        from app.database.repositories import TeamJoinRequestRepository
+        TeamJoinRequestRepository.reject_request(request_id)
+        QMessageBox.information(self, "Rejected", "Request rejected.")
+        self.join_requests_tab = self._create_join_requests_tab()
+        self.tab_widget.removeTab(4)
+        self.tab_widget.insertTab(4, self.join_requests_tab, "Join Requests")
 
     def _create_top_bar(self) -> QHBoxLayout:
         """Create the top navigation bar."""
@@ -117,7 +240,7 @@ class MemberDashboard(QMainWindow):
     def _create_checklist_tab(self) -> QWidget:
         """Create checklist tab."""
         widget = QWidget()
-        layout = QVBoxLayout()
+        layout = QtQVBoxLayout()
 
         # Title
         title = QLabel("Checklist Hub")
@@ -160,7 +283,7 @@ class MemberDashboard(QMainWindow):
     def _create_readme_tab(self) -> QWidget:
         """Create README tab."""
         widget = QWidget()
-        layout = QVBoxLayout()
+        layout = QtQVBoxLayout()
 
         # Title
         title = QLabel("README Manager")
@@ -207,7 +330,7 @@ class MemberDashboard(QMainWindow):
     def _create_notes_tab(self) -> QWidget:
         """Create notes tab."""
         widget = QWidget()
-        layout = QVBoxLayout()
+        layout = QtQVBoxLayout()
 
         # Title
         title = QLabel("Notes System")
@@ -535,7 +658,7 @@ class CreateReadMeDialog(QDialog):
 
     def _init_ui(self):
         """Initialize UI."""
-        layout = QVBoxLayout()
+        layout = QtQVBoxLayout()
 
         layout.addWidget(QLabel("Title:"))
         self.title_input = QLineEdit()
@@ -592,7 +715,7 @@ class EditReadMeDialog(QDialog):
 
     def _init_ui(self):
         """Initialize UI."""
-        layout = QVBoxLayout()
+        layout = QtQVBoxLayout()
 
         layout.addWidget(QLabel("Title:"))
         self.title_input = QLineEdit()
@@ -650,7 +773,7 @@ class CreateNoteDialog(QDialog):
 
     def _init_ui(self):
         """Initialize UI."""
-        layout = QVBoxLayout()
+        layout = QtQVBoxLayout()
 
         layout.addWidget(QLabel("Title:"))
         self.title_input = QLineEdit()
@@ -751,7 +874,7 @@ class EditNoteDialog(QDialog):
 
     def _init_ui(self):
         """Initialize UI."""
-        layout = QVBoxLayout()
+        layout = QtQVBoxLayout()
 
         layout.addWidget(QLabel("Title:"))
         self.title_input = QLineEdit()

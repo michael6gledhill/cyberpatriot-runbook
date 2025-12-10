@@ -25,8 +25,11 @@ class UserRepository:
         """Create a new user."""
         session = get_session()
         try:
-            # Convert UserRole enum to its string value if needed
-            role_value = role.value if isinstance(role, UserRole) else role
+            # Convert UserRole enum to its string value
+            if isinstance(role, UserRole):
+                role_value = role.value
+            else:
+                role_value = str(role)
             
             user = User(
                 name=name,
@@ -34,10 +37,17 @@ class UserRepository:
                 password_hash=password_hash,
                 team_id=team_id,
                 role=role_value,
-                is_approved=(role_value == UserRole.ADMIN.value),  # Admins auto-approved
+                is_approved=(role_value == "admin"),  # Admins auto-approved
             )
             session.add(user)
             session.commit()
+            # Access all attributes while session is still open to force loading
+            _ = user.id
+            _ = user.name
+            _ = user.email
+            _ = user.role
+            _ = user.team_id
+            session.expunge(user)  # Expunge only this user object
             return user
         except SQLAlchemyError as e:
             session.rollback()
@@ -74,10 +84,25 @@ class UserRepository:
         """Get all pending approval users."""
         session = get_session()
         try:
-            query = session.query(User).filter(User.is_approved == False)
+            query = session.query(User).options(joinedload(User.team)).filter(User.is_approved == False)
             if team_id:
                 query = query.filter(User.team_id == team_id)
-            return query.all()
+            users = query.all()
+            if users:
+                session.expunge_all()
+            return users
+        finally:
+            session.close()
+
+    @staticmethod
+    def get_all_users() -> List[User]:
+        """Get all users in the system."""
+        session = get_session()
+        try:
+            users = session.query(User).options(joinedload(User.team)).all()
+            if users:
+                session.expunge_all()
+            return users
         finally:
             session.close()
 
@@ -217,6 +242,23 @@ class TeamRepository:
                 joinedload(Team.members),
                 joinedload(Team.creator)
             ).all()
+            if teams:
+                session.expunge_all()
+            return teams
+        finally:
+            session.close()
+
+    @staticmethod
+    def get_teams_by_creator(creator_user_id: int) -> list:
+        """Get teams created by a specific user."""
+        session = get_session()
+        try:
+            teams = (
+                session.query(Team)
+                .options(joinedload(Team.members), joinedload(Team.creator))
+                .filter(Team.created_by_user_id == creator_user_id)
+                .all()
+            )
             if teams:
                 session.expunge_all()
             return teams
@@ -568,8 +610,23 @@ class AuditLogRepository:
             session.close()
 
 
+
 class TeamJoinRequestRepository:
     """Repository for team join request operations."""
+
+    @staticmethod
+    def get_all_pending_requests() -> List[TeamJoinRequest]:
+        """Get all pending join requests in the system."""
+        session = get_session()
+        try:
+            requests = (
+                session.query(TeamJoinRequest)
+                .filter(TeamJoinRequest.status == JoinRequestStatus.PENDING)
+                .all()
+            )
+            return requests
+        finally:
+            session.close()
 
     @staticmethod
     def create_request(
@@ -614,6 +671,25 @@ class TeamJoinRequestRepository:
                 .filter(TeamJoinRequest.team_id == team_id, TeamJoinRequest.status == JoinRequestStatus.PENDING)
                 .all()
             )
+            return requests
+        finally:
+            session.close()
+
+    @staticmethod
+    def get_pending_requests_for_creator(creator_user_id: int) -> List[TeamJoinRequest]:
+        """Get all pending join requests for teams created by a specific user."""
+        session = get_session()
+        try:
+            requests = (
+                session.query(TeamJoinRequest)
+                .filter(
+                    TeamJoinRequest.team_creator_user_id == creator_user_id,
+                    TeamJoinRequest.status == JoinRequestStatus.PENDING,
+                )
+                .all()
+            )
+            if requests:
+                session.expunge_all()
             return requests
         finally:
             session.close()

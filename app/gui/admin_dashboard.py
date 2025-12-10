@@ -152,7 +152,7 @@ class AdminDashboard(QMainWindow):
         return widget
 
     def _create_member_management_tab(self) -> QWidget:
-        """Create member management tab."""
+        """Create member management tab with search."""
         widget = QWidget()
         layout = QVBoxLayout()
 
@@ -162,6 +162,14 @@ class AdminDashboard(QMainWindow):
         title_font.setPointSize(14)
         title_font.setBold(True)
         layout.addWidget(title)
+
+        # Search bar
+        search_layout = QHBoxLayout()
+        self.member_search_box = QLineEdit()
+        self.member_search_box.setPlaceholderText("Search by name, email, team, or role...")
+        self.member_search_box.textChanged.connect(self._filter_members_table)
+        search_layout.addWidget(self.member_search_box)
+        layout.addLayout(search_layout)
 
         # Members table
         self.members_table = QTableWidget()
@@ -185,6 +193,18 @@ class AdminDashboard(QMainWindow):
 
         widget.setLayout(layout)
         return widget
+
+    def _filter_members_table(self):
+        """Filter members table based on search box input."""
+        search_text = self.member_search_box.text().lower()
+        for row in range(self.members_table.rowCount()):
+            match = False
+            for col in range(4):  # Only search in Name, Email, Team, Role
+                item = self.members_table.item(row, col)
+                if item and search_text in item.text().lower():
+                    match = True
+                    break
+            self.members_table.setRowHidden(row, not match)
 
     def _create_audit_log_tab(self) -> QWidget:
         """Create audit log tab."""
@@ -247,27 +267,48 @@ class AdminDashboard(QMainWindow):
             QMessageBox.critical(self, "Error", f"Failed to load teams: {str(e)}")
 
     def _refresh_pending_users_table(self):
-        """Refresh pending users table."""
+        """Refresh pending users table (now shows join requests)."""
         try:
-            pending_users = UserRepository.get_pending_users()
-            self.pending_table.setRowCount(len(pending_users))
-
-            for row, user in enumerate(pending_users):
-                team_name = user.team.name if user.team else "N/A"
-
-                self.pending_table.setItem(row, 0, QTableWidgetItem(user.name))
-                self.pending_table.setItem(row, 1, QTableWidgetItem(user.email))
-                self.pending_table.setItem(row, 2, QTableWidgetItem(user.role.value.capitalize()))
+            from app.database.repositories import TeamJoinRequestRepository, UserRepository, TeamRepository
+            # Get all pending join requests
+            pending_requests = TeamJoinRequestRepository.get_all_pending_requests() if hasattr(TeamJoinRequestRepository, 'get_all_pending_requests') else []
+            # Get all unapproved users (including coaches)
+            unapproved_users = UserRepository.get_pending_users()
+            # Combine: show join requests and unapproved users who are not competitors/captains (e.g., coaches)
+            rows = []
+            # Add join requests (competitors/captains)
+            for req in pending_requests:
+                user = req.requester if hasattr(req, 'requester') and req.requester else UserRepository.get_user_by_id(req.requester_user_id)
+                team = req.team if hasattr(req, 'team') and req.team else TeamRepository.get_team_by_id(req.team_id)
+                role_display = user.role.capitalize() if user and hasattr(user, 'role') else "N/A"
+                team_name = team.name if team else "N/A"
+                applied_date = getattr(req, 'created_at', None)
+                applied_str = applied_date.strftime("%Y-%m-%d") if applied_date else "N/A"
+                rows.append((user, role_display, team_name, applied_str, req.id, True))
+            # Add unapproved users who are not competitors/captains (e.g., coaches, mentors)
+            for user in unapproved_users:
+                if user.role in ["coach", "mentor"]:
+                    team_name = user.team.name if user.team else "N/A"
+                    applied_str = user.created_at.strftime("%Y-%m-%d") if hasattr(user, "created_at") and user.created_at else "N/A"
+                    rows.append((user, user.role.capitalize(), team_name, applied_str, user.id, False))
+            self.pending_table.setRowCount(len(rows))
+            for row, (user, role_display, team_name, applied_str, obj_id, is_join_request) in enumerate(rows):
+                self.pending_table.setItem(row, 0, QTableWidgetItem(user.name if user else "N/A"))
+                self.pending_table.setItem(row, 1, QTableWidgetItem(user.email if user else "N/A"))
+                self.pending_table.setItem(row, 2, QTableWidgetItem(role_display))
                 self.pending_table.setItem(row, 3, QTableWidgetItem(team_name))
-                self.pending_table.setItem(row, 4, QTableWidgetItem(user.created_at.strftime("%Y-%m-%d")))
-
+                self.pending_table.setItem(row, 4, QTableWidgetItem(applied_str))
                 # Actions
                 actions_widget = QWidget()
                 actions_layout = QHBoxLayout()
                 approve_btn = QPushButton("Approve")
                 reject_btn = QPushButton("Reject")
-                approve_btn.clicked.connect(lambda checked, uid=user.id: self._handle_approve_user(uid))
-                reject_btn.clicked.connect(lambda checked, uid=user.id: self._handle_reject_user(uid))
+                if is_join_request:
+                    approve_btn.clicked.connect(lambda checked, rid=obj_id: self._handle_approve_join_request(rid))
+                    reject_btn.clicked.connect(lambda checked, rid=obj_id: self._handle_reject_join_request(rid))
+                else:
+                    approve_btn.clicked.connect(lambda checked, uid=obj_id: self._approve_user_by_id(uid))
+                    reject_btn.clicked.connect(lambda checked, uid=obj_id: self._handle_reject_user(uid))
                 actions_layout.addWidget(approve_btn)
                 actions_layout.addWidget(reject_btn)
                 actions_layout.setContentsMargins(0, 0, 0, 0)
@@ -275,43 +316,71 @@ class AdminDashboard(QMainWindow):
                 self.pending_table.setCellWidget(row, 5, actions_widget)
 
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to load pending users: {str(e)}")
+            QMessageBox.critical(self, "Error", f"Failed to load pending join requests: {str(e)}")
+
+    def _handle_approve_join_request(self, request_id):
+        from app.database.repositories import TeamJoinRequestRepository
+        TeamJoinRequestRepository.approve_request(request_id)
+        QMessageBox.information(self, "Success", "Join request approved.")
+        self._refresh_pending_users_table()
+
+    def _handle_reject_join_request(self, request_id):
+        from app.database.repositories import TeamJoinRequestRepository
+        TeamJoinRequestRepository.reject_request(request_id)
+        QMessageBox.information(self, "Success", "Join request rejected.")
+        self._refresh_pending_users_table()
 
     def _refresh_members_table(self):
-        """Refresh members table."""
+        """Refresh members table with ALL users in the system."""
         try:
-            teams = TeamRepository.get_all_teams()
-            all_members = []
+            from app.database.repositories import UserRepository
+            # Get all users in the system (including admins, unapproved, etc.)
+            all_users = UserRepository.get_all_users()
 
-            for team in teams:
-                if team.members:
-                    all_members.extend(team.members)
+            self.members_table.setRowCount(len(all_users))
 
-            self.members_table.setRowCount(len(all_members))
-
-            for row, user in enumerate(all_members):
+            for row, user in enumerate(all_users):
                 team_name = user.team.name if user.team else "N/A"
+                role_display = user.role if isinstance(user.role, str) else user.role.value
+                approval_status = "Approved" if user.is_approved else "Pending"
 
                 self.members_table.setItem(row, 0, QTableWidgetItem(user.name))
                 self.members_table.setItem(row, 1, QTableWidgetItem(user.email))
                 self.members_table.setItem(row, 2, QTableWidgetItem(team_name))
-                self.members_table.setItem(row, 3, QTableWidgetItem(user.role.value.capitalize()))
+                self.members_table.setItem(row, 3, QTableWidgetItem(role_display.capitalize()))
 
-                # Actions
+                # Add approval status as additional info (or can be shown differently)
+                approval_item = QTableWidgetItem(approval_status)
+                self.members_table.setItem(row, 4, approval_item)
+
+                # Actions - modify to accommodate approval status
                 actions_widget = QWidget()
                 actions_layout = QHBoxLayout()
+                
+                if not user.is_approved:
+                    approve_btn = QPushButton("Approve")
+                    approve_btn.clicked.connect(lambda checked, uid=user.id: self._approve_user_by_id(uid))
+                    actions_layout.addWidget(approve_btn)
+                
                 role_btn = QPushButton("Change Role")
-                del_btn = QPushButton("Remove")
+                del_btn = QPushButton("Delete")
                 role_btn.clicked.connect(lambda checked, uid=user.id: self._show_change_role_dialog(uid))
                 del_btn.clicked.connect(lambda checked, uid=user.id: self._handle_remove_member_id(uid))
                 actions_layout.addWidget(role_btn)
                 actions_layout.addWidget(del_btn)
                 actions_layout.setContentsMargins(0, 0, 0, 0)
                 actions_widget.setLayout(actions_layout)
-                self.members_table.setCellWidget(row, 4, actions_widget)
+                self.members_table.setCellWidget(row, 5, actions_widget)
 
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to load members: {str(e)}")
+
+    def _approve_user_by_id(self, user_id):
+        """Approve a pending user by ID."""
+        from app.database.repositories import UserRepository
+        UserRepository.approve_user(user_id)
+        QMessageBox.information(self, "Success", "User approved successfully.")
+        self._refresh_members_table()
 
     def _refresh_audit_log_table(self):
         """Refresh audit log table."""

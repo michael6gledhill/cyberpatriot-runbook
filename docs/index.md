@@ -1,26 +1,35 @@
-# CyberPatriot Runbook
+---
 
-Welcome to the CyberPatriot Runbook documentation. This site is deployed via GitHub Pages and built with MkDocs.
+# CyberPatriot Runbook Documentation
 
-## Getting Started
+Professional user and operator guide for the CyberPatriot Runbook desktop application.
 
-- Install dependencies: `pip install -r requirements.txt`
-- Run the app: `python main.py`
-- Database setup: see `database_setup.sql` and `init_database.py`
+This site covers installation, configuration, role-based workflows, and troubleshooting. The app is a PySide6 desktop client using MySQL with SQLAlchemy and Alembic.
 
-## Features
+Quick Start
+- Install Python dependencies: `pip install -r requirements.txt`
+- Configure `DATABASE_URL` (MySQL): see Setup
+- Initialize DB schema: `alembic upgrade head`
+- Launch: `python main.py`
 
-- User roles: admin, coach, captain, member
-- Team creation and join requests
-- Dashboards for admin, coach, member
-- Audit logging and notes/checklists
+What You’ll Find Here
+- Overview: architecture, roles, and data flow
+- Setup: environment, database, and migration steps
+- Usage: login/sign-up, dashboards, approvals, and daily tasks
+- Roles: capabilities for Admin, Coach, Captain, Member
+- Teams: creation, join requests, and member lifecycle
+- Dashboards: Admin/Coach/Member features
+- Security: hashing, encryption, and best practices
+- Troubleshooting: common issues and fixes
 
-## Contributing
+Support & Contributions
+- Open an issue or pull request on GitHub
+- Follow conventional commits and include clear reproduction steps for bugs
 
-1. Create a branch
-2. Commit changes
-3. Open a pull request
+Local Docs Preview
+```bash
+pip install mkdocs mkdocs-material
+mkdocs serve
+```
 
-## Deployment
-
-The GitHub Actions workflow builds this site and publishes to the `gh-pages` branch.
+The documentation will be available at http://127.0.0.1:8000/ while serving.

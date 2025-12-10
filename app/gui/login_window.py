@@ -176,9 +176,14 @@ class LoginWindow(QMainWindow):
 
             # Check if user is approved (except for admins)
             if user.role != "admin" and not user.is_approved:
+                pending_msg = "Your account is pending admin approval. "
+                if user.role == "coach":
+                    pending_msg += "Please wait for an admin to approve your access."
+                else:
+                    pending_msg += "Please wait for your team captain to approve your access."
                 self._show_message(
                     "Pending Approval",
-                    "Your account is pending admin approval. Please wait for your team captain to approve your access.",
+                    pending_msg,
                     QMessageBox.Warning,
                 )
                 return
@@ -289,26 +294,24 @@ class LoginWindow(QMainWindow):
                 message = (
                     f"Your {role_display.capitalize()} account has been created successfully!\n"
                     f"You can now log in and create teams."
+                )
                 self._show_message("Account Created", message, QMessageBox.Information)
-                # For admin/coach/mentor, auto-approve and emit login signal
-                QMessageBox.information(self, "Account Created", message)
-                
                 # Auto-login admin/coach/mentor
                 user_data = {
                     "id": new_user.id,
                     "name": new_user.name,
                     "email": new_user.email,
-                    "role": new_user.role.value,
+                    "role": new_user.role if isinstance(new_user.role, str) else new_user.role.value,
                     "team_id": new_user.team_id,
                     "is_approved": new_user.is_approved,
                 }
                 self.login_successful.emit(user_data)
             else:
                 message = (
-                    f"Your account has been created and is pending approval.\n"
-                self._show_message("Account Created", message, QMessageBox.Information)
+                    "Your account has been created and is pending approval.\n"
+                    "Your team coach will review your request soon."
                 )
-                QMessageBox.information(self, "Account Created", message)
+                self._show_message("Account Created", message, QMessageBox.Information)
 
             # Clear fields
             self.signup_name.clear()
@@ -322,10 +325,7 @@ class LoginWindow(QMainWindow):
                 self.tab_widget.setCurrentIndex(0)
 
         except Exception as e:
-            import traceback
             self._show_message("Error", f"An error occurred during signup: {str(e)}", QMessageBox.Critical)
-            print(error_msg)
-            QMessageBox.critical(self, "Error", f"An error occurred during signup: {str(e)}")
 
     def _get_stylesheet(self) -> str:
         """Return the stylesheet for the login window."""

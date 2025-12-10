@@ -212,9 +212,24 @@ class CoachDashboard(QMainWindow):
         """Refresh the teams table with current data."""
         self.teams_table.setRowCount(0)
         try:
-            # In a real implementation, we'd query teams created by this coach
-            # For now, we'll show a placeholder
-            pass
+            teams = TeamRepository.get_teams_by_creator(self.coach_user["id"])
+            self.teams_table.setRowCount(len(teams))
+
+            for row, team in enumerate(teams):
+                member_count = len(team.members) if team.members else 0
+                self.teams_table.setItem(row, 0, QTableWidgetItem(team.name))
+                self.teams_table.setItem(row, 1, QTableWidgetItem(team.team_id))
+                self.teams_table.setItem(row, 2, QTableWidgetItem(team.division))
+                self.teams_table.setItem(row, 3, QTableWidgetItem(str(member_count)))
+
+                actions_widget = QWidget()
+                actions_layout = QHBoxLayout()
+                actions_layout.setContentsMargins(0, 0, 0, 0)
+                edit_btn = QPushButton("Edit")
+                edit_btn.clicked.connect(lambda checked, t=team: self._open_edit_team(t))
+                actions_layout.addWidget(edit_btn)
+                actions_widget.setLayout(actions_layout)
+                self.teams_table.setCellWidget(row, 4, actions_widget)
         except Exception as e:
             QMessageBox.warning(self, "Error", f"Failed to load teams: {str(e)}")
 
@@ -222,8 +237,20 @@ class CoachDashboard(QMainWindow):
         """Refresh the members table."""
         self.members_table.setRowCount(0)
         try:
-            # In a real implementation, we'd query team members
-            pass
+            teams = TeamRepository.get_teams_by_creator(self.coach_user["id"])
+            members = []
+            for team in teams:
+                if team.members:
+                    for m in team.members:
+                        members.append((m, team))
+
+            self.members_table.setRowCount(len(members))
+            for row, (member, team) in enumerate(members):
+                self.members_table.setItem(row, 0, QTableWidgetItem(member.name))
+                self.members_table.setItem(row, 1, QTableWidgetItem(member.email))
+                self.members_table.setItem(row, 2, QTableWidgetItem(member.role if isinstance(member.role, str) else member.role.value))
+                self.members_table.setItem(row, 3, QTableWidgetItem("Approved" if member.is_approved else "Pending"))
+                self.members_table.setItem(row, 4, QTableWidgetItem(team.name))
         except Exception as e:
             QMessageBox.warning(self, "Error", f"Failed to load members: {str(e)}")
 
@@ -231,10 +258,65 @@ class CoachDashboard(QMainWindow):
         """Refresh the join requests table."""
         self.join_requests_table.setRowCount(0)
         try:
-            # In a real implementation, we'd query join requests for teams created by this coach
-            pass
+            from app.database.repositories import UserRepository, TeamRepository, TeamJoinRequestRepository
+            teams = TeamRepository.get_teams_by_creator(self.coach_user["id"])
+            rows = []
+            for team in teams:
+                # Get all team members who are pending approval and are competitor/captain/mentor
+                members = UserRepository.get_team_members(team.id)
+                for m in members:
+                    if not m.is_approved and m.role in ["competitor", "captain", "mentor"]:
+                        role_display = m.role.capitalize() if hasattr(m, 'role') else "N/A"
+                        team_name = team.name if team else "N/A"
+                        applied_str = m.created_at.strftime("%Y-%m-%d %H:%M") if hasattr(m, "created_at") and m.created_at else "N/A"
+                        rows.append((m, role_display, team_name, applied_str, m.id, False))
+            # Also add join requests for this coach's teams
+            requests = TeamJoinRequestRepository.get_pending_requests_for_creator(self.coach_user["id"])
+            for req in requests:
+                user = UserRepository.get_user_by_id(req.requester_user_id)
+                team = TeamRepository.get_team_by_id(req.team_id)
+                role_display = user.role.capitalize() if user and hasattr(user, 'role') else "N/A"
+                team_name = team.name if team else "N/A"
+                applied_str = req.created_at.strftime("%Y-%m-%d %H:%M") if req.created_at else "N/A"
+                rows.append((user, role_display, team_name, applied_str, req.id, True))
+            self.join_requests_table.setRowCount(len(rows))
+            for row, (user, role_display, team_name, applied_str, obj_id, is_join_request) in enumerate(rows):
+                self.join_requests_table.setItem(row, 0, QTableWidgetItem(user.name if user else "N/A"))
+                self.join_requests_table.setItem(row, 1, QTableWidgetItem(user.email if user else "N/A"))
+                self.join_requests_table.setItem(row, 2, QTableWidgetItem(role_display))
+                self.join_requests_table.setItem(row, 3, QTableWidgetItem(team_name))
+                self.join_requests_table.setItem(row, 4, QTableWidgetItem(applied_str))
+                # Actions
+                actions_widget = QWidget()
+                actions_layout = QHBoxLayout()
+                approve_btn = QPushButton("Approve")
+                reject_btn = QPushButton("Reject")
+                if is_join_request:
+                    approve_btn.clicked.connect(lambda checked, rid=obj_id: self._handle_approve_join_request(rid))
+                    reject_btn.clicked.connect(lambda checked, rid=obj_id: self._handle_reject_join_request(rid))
+                else:
+                    approve_btn.clicked.connect(lambda checked, uid=obj_id: self._approve_user_by_id(uid))
+                    reject_btn.clicked.connect(lambda checked, uid=obj_id: self._handle_reject_user(uid))
+                actions_layout.addWidget(approve_btn)
+                actions_layout.addWidget(reject_btn)
+                actions_layout.setContentsMargins(0, 0, 0, 0)
+                actions_widget.setLayout(actions_layout)
+                self.join_requests_table.setCellWidget(row, 5, actions_widget)
         except Exception as e:
             QMessageBox.warning(self, "Error", f"Failed to load join requests: {str(e)}")
+
+    def _open_edit_team(self, team):
+        # Placeholder: allow editing name/division locally
+        dialog = CreateTeamDialog(self.coach_user["id"], self)
+        dialog.team_name.setText(team.name)
+        dialog.team_id.setText(team.team_id)
+        dialog.team_id.setReadOnly(True)
+        idx = dialog.division.findText(team.division)
+        if idx >= 0:
+            dialog.division.setCurrentIndex(idx)
+        if dialog.exec() == QDialog.Accepted:
+            TeamRepository.update_team(team.id, dialog.team_name.text().strip(), dialog.division.currentText())
+            self._refresh_teams_table()
 
     def _refresh_audit_log_table(self):
         """Refresh the audit log table."""
@@ -294,9 +376,20 @@ class CoachDashboard(QMainWindow):
             QMessageBox.warning(self, "Selection Error", "Please select a member to approve.")
             return
 
-        # Implement member approval logic
-        QMessageBox.information(self, "Success", "Member approved!")
+        # Get user ID from table
+        row = selected_rows[0].row()
+        user_id_item = self.members_table.item(row, 1)  # Assuming column 1 is email, need user ID
+        # If you have a hidden column for user ID, use that; otherwise, fetch by email
+        from app.database.repositories import UserRepository
+        email = self.members_table.item(row, 1).text()
+        user = UserRepository.get_user_by_email(email)
+        if user:
+            UserRepository.approve_user(user.id)
+            QMessageBox.information(self, "Success", f"Member {user.name} approved!")
+        else:
+            QMessageBox.warning(self, "Error", "Could not find user to approve.")
         self._refresh_members_table()
+        self._refresh_join_requests_table()
 
     def _reject_member(self):
         """Handle member rejection."""

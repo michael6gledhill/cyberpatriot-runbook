@@ -7,6 +7,8 @@ from app.gui.login_window import LoginWindow
 from app.gui.admin_dashboard import AdminDashboard
 from app.gui.coach_dashboard import CoachDashboard
 from app.gui.member_dashboard import MemberDashboard
+from app.gui.competitor_dashboard import CompetitorDashboard
+from app.gui.mentor_dashboard import MentorDashboard
 
 
 class MainWindow(QStackedWidget):
@@ -38,10 +40,17 @@ class MainWindow(QStackedWidget):
             self.current_dashboard = None
 
         # Create appropriate dashboard based on role
-        if user_data["role"] == "admin":
+        role = user_data["role"].lower()
+        if role == "admin":
             self.current_dashboard = AdminDashboard(user_data)
-        elif user_data["role"] == "coach":
+        elif role == "coach":
             self.current_dashboard = CoachDashboard(user_data)
+        elif role == "captain":
+            self.current_dashboard = MemberDashboard(user_data)
+        elif role == "competitor":
+            self.current_dashboard = CompetitorDashboard(user_data)
+        elif role == "mentor":
+            self.current_dashboard = MentorDashboard(user_data)
         else:
             self.current_dashboard = MemberDashboard(user_data)
 
