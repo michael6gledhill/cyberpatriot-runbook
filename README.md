@@ -13,7 +13,7 @@ Desktop GUI application for managing CyberPatriot team checklists, documentation
 
 Quick links:
 - Project documentation: https://michael6gledhill.github.io/cyberpatriot-runbook/
-- Getting started: docs/setup.md
+- Backend on Ubuntu: docs/backend-ubuntu.md
 - Usage guide: docs/usage.md
 
 Overview
@@ -40,15 +40,15 @@ pip install -r requirements.txt
 ```
 
 Configure Database
-- Create a database:
+- Create a database (Docker Compose on Ubuntu does this automatically):
 ```sql
 CREATE DATABASE cyberpatriot_runbook CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
-- Set the connection string (preferred via environment variable):
-```bash
-set DATABASE_URL=mysql+pymysql://<user>:<password>@localhost:3306/cyberpatriot_runbook
+- Set the connection string (preferred via environment variable). Windows `cmd.exe` example:
+```cmd
+set DATABASE_URL=mysql+pymysql://cp_user:your-strong-password@SERVER_IP:3306/cyberpatriot_runbook
 ```
-Or edit `config.py` to provide `DATABASE_URL`.
+Replace `SERVER_IP` with your Ubuntu server IP. For special characters in the password, escape `&` and `|` with `^`; avoid `!` in delayed expansion (use a fresh `cmd` or `cmd /v:off`).
 
 Initialize Schema (Alembic)
 ```bash
@@ -67,10 +67,31 @@ Backend on Ubuntu (Docker)
 Quick start on Ubuntu Server:
 ```bash
 sudo apt update
-sudo apt install -y docker.io
-sudo systemctl enable --now docker
-sudo usermod -aG docker $USER
-# Log out/in, then in repo root:
+sudo apt install -y ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release; echo $VERSION_CODENAME) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+mkdir -p ~/cyberpatriot-backend && cd ~/cyberpatriot-backend
+cat > docker-compose.yml << 'YML'
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: cyberpatriot_runbook
+      MYSQL_USER: cp_user
+      MYSQL_PASSWORD: your-strong-password
+      MYSQL_ROOT_PASSWORD: your-strong-root-password
+    ports:
+      - "3306:3306"
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci"]
+    volumes:
+      - db_data:/var/lib/mysql
+volumes:
+  db_data:
+YML
 docker compose up -d
 ```
 
@@ -81,7 +102,7 @@ alembic upgrade head
 python main.py
 ```
 
-See `docs/pi-setup.md` for the complete Ubuntu backend guide.
+See `docs/backend-ubuntu.md` for the complete Ubuntu backend guide.
 
 Documentation
 - Full documentation (with screenshots and guides) is published at:
