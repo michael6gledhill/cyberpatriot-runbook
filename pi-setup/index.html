@@ -64,7 +64,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#raspberry-pi-casaos-backend-setup" class="md-skip">
+        <a href="#ubuntu-server-backend-setup-docker" class="md-skip">
           Skip to content
         </a>
       
@@ -545,10 +545,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#1-install-and-configure-mysql-on-the-pi" class="md-nav__link">
+  <a href="#1-start-mysql-backend-with-docker" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Install and Configure MySQL on the Pi
+        1. Start MySQL Backend with Docker
       
     </span>
   </a>
@@ -556,10 +556,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-create-database-and-user-on-the-pi" class="md-nav__link">
+  <a href="#2-run-alembic-migrations-from-a-local-computer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Create Database and User on the Pi
+        2. Run Alembic Migrations from a Local Computer
       
     </span>
   </a>
@@ -567,10 +567,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-run-alembic-migrations-from-a-local-computer" class="md-nav__link">
+  <a href="#3-run-the-frontend-on-local-computers" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Run Alembic Migrations from a Local Computer
+        3. Run the Frontend on Local Computers
       
     </span>
   </a>
@@ -578,10 +578,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-run-the-frontend-on-local-computers" class="md-nav__link">
+  <a href="#4-optional-configure-database_url-on-the-server-for-admin-tasks" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Run the Frontend on Local Computers
+        4. Optional: Configure DATABASE_URL on the Server for Admin Tasks
       
     </span>
   </a>
@@ -589,10 +589,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-optional-configure-database_url-on-the-pi-for-admin-tasks" class="md-nav__link">
+  <a href="#5-network-and-security-notes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Optional: Configure DATABASE_URL on the Pi for Admin Tasks
+        5. Network and Security Notes
       
     </span>
   </a>
@@ -600,10 +600,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-network-and-security-notes" class="md-nav__link">
+  <a href="#6-verify-connectivity-from-local-computers" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Network and Security Notes
+        6. Verify Connectivity from Local Computers
       
     </span>
   </a>
@@ -611,10 +611,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-verify-connectivity-from-local-computers" class="md-nav__link">
+  <a href="#7-docker-notes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. Verify Connectivity from Local Computers
+        7. Docker Notes
       
     </span>
   </a>
@@ -622,10 +622,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#8-casaos-considerations" class="md-nav__link">
+  <a href="#8-frontend-deployment-tips" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8. CasaOS Considerations
+        8. Frontend Deployment Tips
       
     </span>
   </a>
@@ -633,10 +633,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#9-frontend-deployment-tips" class="md-nav__link">
+  <a href="#9-troubleshooting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        9. Frontend Deployment Tips
+        9. Troubleshooting
       
     </span>
   </a>
@@ -644,21 +644,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#10-troubleshooting" class="md-nav__link">
+  <a href="#10-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10. Troubleshooting
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#11-next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11. Next Steps
+        10. Next Steps
       
     </span>
   </a>
@@ -733,10 +722,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#1-install-and-configure-mysql-on-the-pi" class="md-nav__link">
+  <a href="#1-start-mysql-backend-with-docker" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Install and Configure MySQL on the Pi
+        1. Start MySQL Backend with Docker
       
     </span>
   </a>
@@ -744,10 +733,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-create-database-and-user-on-the-pi" class="md-nav__link">
+  <a href="#2-run-alembic-migrations-from-a-local-computer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Create Database and User on the Pi
+        2. Run Alembic Migrations from a Local Computer
       
     </span>
   </a>
@@ -755,10 +744,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-run-alembic-migrations-from-a-local-computer" class="md-nav__link">
+  <a href="#3-run-the-frontend-on-local-computers" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Run Alembic Migrations from a Local Computer
+        3. Run the Frontend on Local Computers
       
     </span>
   </a>
@@ -766,10 +755,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-run-the-frontend-on-local-computers" class="md-nav__link">
+  <a href="#4-optional-configure-database_url-on-the-server-for-admin-tasks" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Run the Frontend on Local Computers
+        4. Optional: Configure DATABASE_URL on the Server for Admin Tasks
       
     </span>
   </a>
@@ -777,10 +766,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-optional-configure-database_url-on-the-pi-for-admin-tasks" class="md-nav__link">
+  <a href="#5-network-and-security-notes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Optional: Configure DATABASE_URL on the Pi for Admin Tasks
+        5. Network and Security Notes
       
     </span>
   </a>
@@ -788,10 +777,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-network-and-security-notes" class="md-nav__link">
+  <a href="#6-verify-connectivity-from-local-computers" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Network and Security Notes
+        6. Verify Connectivity from Local Computers
       
     </span>
   </a>
@@ -799,10 +788,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-verify-connectivity-from-local-computers" class="md-nav__link">
+  <a href="#7-docker-notes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. Verify Connectivity from Local Computers
+        7. Docker Notes
       
     </span>
   </a>
@@ -810,10 +799,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#8-casaos-considerations" class="md-nav__link">
+  <a href="#8-frontend-deployment-tips" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8. CasaOS Considerations
+        8. Frontend Deployment Tips
       
     </span>
   </a>
@@ -821,10 +810,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#9-frontend-deployment-tips" class="md-nav__link">
+  <a href="#9-troubleshooting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        9. Frontend Deployment Tips
+        9. Troubleshooting
       
     </span>
   </a>
@@ -832,21 +821,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#10-troubleshooting" class="md-nav__link">
+  <a href="#10-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10. Troubleshooting
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#11-next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11. Next Steps
+        10. Next Steps
       
     </span>
   </a>
@@ -884,98 +862,97 @@
   
 
 
-<h1 id="raspberry-pi-casaos-backend-setup">Raspberry Pi (CasaOS) Backend Setup</h1>
-<p>This guide focuses on running only the backend (MySQL database) on a Raspberry Pi running CasaOS. The application frontend (PySide6 desktop client) runs on your local computer(s) and connects to the Pi-hosted database over the network.</p>
+<h1 id="ubuntu-server-backend-setup-docker">Ubuntu Server Backend Setup (Docker)</h1>
+<p>This guide sets up the backend (MySQL) on an Ubuntu Server using Docker. The frontend (PySide6 desktop client) runs on your local computer(s) and connects to the Ubuntu-hosted database over the network.</p>
 <blockquote>
 <p>View the source on GitHub: https://github.com/michael6gledhill/cyberpatriot-runbook</p>
 </blockquote>
 <h2 id="what-runs-where">What Runs Where</h2>
 <ul>
-<li>Raspberry Pi: MySQL server (database backend)</li>
+<li>Ubuntu Server: MySQL server (database backend) via Docker Compose</li>
 <li>Local computers: CyberPatriot Runbook desktop app (frontend) and Alembic migrations</li>
 </ul>
 <h2 id="prerequisites">Prerequisites</h2>
 <ul>
-<li>Raspberry Pi (64-bit OS recommended) with CasaOS installed</li>
+<li>Ubuntu Server with Docker and Docker Compose installed</li>
 <li>Internet connectivity and shell access</li>
 <li>Local computer(s) with Python installed to run the GUI</li>
 </ul>
-<h2 id="1-install-and-configure-mysql-on-the-pi">1. Install and Configure MySQL on the Pi</h2>
-<p>Update APT and install MySQL server:</p>
+<p>Install Docker &amp; Compose:</p>
 <pre><code class="language-bash">sudo apt update
-sudo apt install -y mysql-server
+sudo apt install -y docker.io
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER
+# Log out/in to apply group membership
 </code></pre>
-<p>Secure and start MySQL:</p>
-<pre><code class="language-bash">sudo systemctl enable mysql
-sudo systemctl start mysql
-sudo mysql_secure_installation
+<p>Compose v2 is bundled with recent Docker; if needed:</p>
+<pre><code class="language-bash">sudo apt install -y docker-compose-plugin
 </code></pre>
-<h2 id="2-create-database-and-user-on-the-pi">2. Create Database and User on the Pi</h2>
-<p>Log in to MySQL and create the database and a dedicated user.</p>
-<pre><code class="language-bash">mysql -u root -p
+<h2 id="1-start-mysql-backend-with-docker">1. Start MySQL Backend with Docker</h2>
+<p>On the Ubuntu server, place <code>docker-compose.yml</code> in a directory, then run:</p>
+<pre><code class="language-bash">docker compose up -d
 </code></pre>
-<p>Inside MySQL shell:</p>
-<pre><code class="language-sql">CREATE DATABASE cyberpatriot_runbook CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'cp_user'@'localhost' IDENTIFIED BY 'your-strong-password';
-GRANT ALL PRIVILEGES ON cyberpatriot_runbook.* TO 'cp_user'@'localhost';
-FLUSH PRIVILEGES;
+<p>Environment defaults in <code>docker-compose.yml</code>:
+- <code>MYSQL_DATABASE=cyberpatriot_runbook</code>
+- <code>MYSQL_USER=cp_user</code>
+- <code>MYSQL_PASSWORD=your-strong-password</code>
+- <code>MYSQL_ROOT_PASSWORD=change-this-root-password</code></p>
+<p>To change credentials, edit <code>docker-compose.yml</code> and restart:</p>
+<pre><code class="language-bash">docker compose down
+docker compose up -d
 </code></pre>
-<p>If you plan to connect from other machines, grant to <code>%</code> and ensure MySQL listens on all interfaces:</p>
-<pre><code class="language-sql">CREATE USER 'cp_user'@'%' IDENTIFIED BY 'your-strong-password';
-GRANT ALL PRIVILEGES ON cyberpatriot_runbook.* TO 'cp_user'@'%';
-FLUSH PRIVILEGES;
-</code></pre>
-<p>Enable remote connections:
-- Edit <code>/etc/mysql/mysql.conf.d/mysqld.cnf</code> and set <code>bind-address = 0.0.0.0</code>
-- Restart MySQL: <code>sudo systemctl restart mysql</code></p>
-<h2 id="3-run-alembic-migrations-from-a-local-computer">3. Run Alembic Migrations from a Local Computer</h2>
+<h2 id="2-run-alembic-migrations-from-a-local-computer">2. Run Alembic Migrations from a Local Computer</h2>
 <p>On your local computer (not on the Pi), clone the repository and configure the <code>DATABASE_URL</code> to point to the Pi.</p>
 <pre><code class="language-bash">git clone https://github.com/michael6gledhill/cyberpatriot-runbook.git
 cd cyberpatriot-runbook
 pip install -r requirements.txt
 </code></pre>
 <p>Set <code>DATABASE_URL</code> (replace <code>&lt;PI_IP&gt;</code>):</p>
-<pre><code class="language-bash">set DATABASE_URL=mysql+pymysql://cp_user:your-strong-password@&lt;PI_IP&gt;:3306/cyberpatriot_runbook
+<pre><code class="language-bash">set DATABASE_URL=mysql+pymysql://cp_user:your-strong-password@&lt;SERVER_IP&gt;:3306/cyberpatriot_runbook
 </code></pre>
 <p>Run migrations:</p>
 <pre><code class="language-bash">alembic upgrade head
 </code></pre>
-<h2 id="4-run-the-frontend-on-local-computers">4. Run the Frontend on Local Computers</h2>
+<h2 id="3-run-the-frontend-on-local-computers">3. Run the Frontend on Local Computers</h2>
 <p>On any local computer that will use the app:</p>
 <pre><code class="language-bash">git clone https://github.com/michael6gledhill/cyberpatriot-runbook.git
 cd cyberpatriot-runbook
 pip install -r requirements.txt
-set DATABASE_URL=mysql+pymysql://cp_user:your-strong-password@&lt;PI_IP&gt;:3306/cyberpatriot_runbook
+set DATABASE_URL=mysql+pymysql://cp_user:your-strong-password@&lt;SERVER_IP&gt;:3306/cyberpatriot_runbook
 python main.py
 </code></pre>
-<h2 id="5-optional-configure-database_url-on-the-pi-for-admin-tasks">5. Optional: Configure <code>DATABASE_URL</code> on the Pi for Admin Tasks</h2>
+<h2 id="4-optional-configure-database_url-on-the-server-for-admin-tasks">4. Optional: Configure <code>DATABASE_URL</code> on the Server for Admin Tasks</h2>
 <p>If you prefer to run Alembic from the Pi instead, set <code>DATABASE_URL</code> there:</p>
 <pre><code class="language-bash">echo 'DATABASE_URL=mysql+pymysql://cp_user:your-strong-password@localhost:3306/cyberpatriot_runbook' | sudo tee -a /etc/environment
 </code></pre>
 <p>Log out/in or <code>source /etc/environment</code> to apply.</p>
-<h2 id="6-network-and-security-notes">6. Network and Security Notes</h2>
+<h2 id="5-network-and-security-notes">5. Network and Security Notes</h2>
 <ul>
 <li>Restrict MySQL access to your LAN/subnets as needed.</li>
 <li>Consider firewall rules allowing TCP 3306 only from trusted hosts.</li>
 <li>Use strong passwords and rotate credentials periodically.</li>
 </ul>
-<h2 id="7-verify-connectivity-from-local-computers">7. Verify Connectivity from Local Computers</h2>
+<h2 id="6-verify-connectivity-from-local-computers">6. Verify Connectivity from Local Computers</h2>
 <p>From your local computer, test connectivity:</p>
 <pre><code class="language-bash">mysql -h &lt;PI_IP&gt; -u cp_user -p
 </code></pre>
 <p>If successful, the GUI will operate normally against the Pi-hosted database.</p>
-<h2 id="8-casaos-considerations">8. CasaOS Considerations</h2>
+<h2 id="7-docker-notes">7. Docker Notes</h2>
 <ul>
-<li>CasaOS may manage services via containers; this guide uses host-installed MySQL.</li>
-<li>For containerization later, expose port 3306 and use the same <code>DATABASE_URL</code>.</li>
+<li>The compose file exposes <code>3306:3306</code> for MySQL access.</li>
+<li>Data is persisted in the <code>db_data</code> Docker volume.</li>
+<li>To stop/start:</li>
 </ul>
-<h2 id="9-frontend-deployment-tips">9. Frontend Deployment Tips</h2>
+<pre><code class="language-bash">docker compose down
+docker compose up -d
+</code></pre>
+<h2 id="8-frontend-deployment-tips">8. Frontend Deployment Tips</h2>
 <ul>
 <li>Distribute the desktop app by cloning the repo on each local machine.</li>
 <li>Configure <code>DATABASE_URL</code> to point to the Pi’s IP.</li>
 <li>Keep clients updated via <code>git pull</code> when you make changes.</li>
 </ul>
-<h2 id="10-troubleshooting">10. Troubleshooting</h2>
+<h2 id="9-troubleshooting">9. Troubleshooting</h2>
 <ul>
 <li>Access denied:</li>
 <li>Verify <code>cp_user</code> credentials and privileges.</li>
@@ -986,7 +963,7 @@ python main.py
 <li>PySide6 display issues:</li>
 <li>Run the app on a local desktop; the Pi should only host MySQL.</li>
 </ul>
-<h2 id="11-next-steps">11. Next Steps</h2>
+<h2 id="10-next-steps">10. Next Steps</h2>
 <ul>
 <li>On a local computer, run the desktop app and create an admin account.</li>
 <li>Configure teams and begin approvals; data persists on the Pi MySQL.</li>
