@@ -1,4 +1,3 @@
-  type: website
 project:
   type: website
   output-dir: _site
