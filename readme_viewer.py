@@ -25,6 +25,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QFont, QColor
+from db_config import get_connection, close_connection
 
 
 class ReadmeViewerWindow(QMainWindow):
@@ -35,11 +36,10 @@ class ReadmeViewerWindow(QMainWindow):
         self.setWindowTitle("CyberPatriot Team README Viewer")
         self.setGeometry(100, 100, 1200, 700)
         self.setStyleSheet(self._get_stylesheet())
-        self.readmes_dir = Path("team_readmes")
-        self.readmes_dir.mkdir(exist_ok=True)
         self.teams = self._load_teams()
         self.current_user_id = None
         self.current_username = None
+        self.current_team_id = None
         self._init_ui()
 
     def _load_teams(self):
@@ -194,8 +194,10 @@ class ReadmeViewerWindow(QMainWindow):
         if not team_name or team_name == "No teams available":
             self.members_list.clear()
             self.readme_content.setPlainText("")
+            self.current_team_id = None
             return
         
+        self.current_team_id = self.teams.get(team_name)
         self._refresh_members()
 
     def _refresh_members(self):
@@ -224,31 +226,46 @@ class ReadmeViewerWindow(QMainWindow):
         self._load_readme(username)
 
     def _load_readme(self, username):
-        """Load README content for a member."""
-        team_name = self.team_combo.currentText()
-        readme_file = self.readmes_dir / f"{team_name}_{username}_readme.txt"
+        """Load README content for a member from database."""
+        if not self.current_team_id:
+            self.readme_content.setPlainText("No team selected.")
+            return
 
-        if readme_file.exists():
-            try:
-                with open(readme_file, "r") as f:
-                    content = f.read()
-                self.readme_content.setPlainText(content)
-            except Exception as e:
-                self.readme_content.setPlainText(f"Error reading file: {str(e)}")
-        else:
-            self.readme_content.setPlainText("No README file uploaded yet.")
+        connection = get_connection()
+        if not connection:
+            self.readme_content.setPlainText("Database connection error.")
+            return
+
+        try:
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute(
+                "SELECT content FROM readmes WHERE team_id = %s AND user_id = "
+                "(SELECT id FROM users WHERE username = %s)",
+                (self.current_team_id, username)
+            )
+            result = cursor.fetchone()
+            cursor.close()
+
+            if result:
+                self.readme_content.setPlainText(result['content'])
+            else:
+                self.readme_content.setPlainText("No README file uploaded yet.")
+        except Exception as e:
+            self.readme_content.setPlainText(f"Error reading file: {str(e)}")
+        finally:
+            close_connection(connection)
 
     def _upload_readme(self):
-        """Upload a README file."""
+        """Upload a README file to database."""
         team_name = self.team_combo.currentText()
         if not team_name or team_name == "No teams available":
             QMessageBox.warning(self, "No Team", "Please select a team first.")
             return
 
-        # Get username from user input
+        # Get username and os_type from user input
         dialog = QDialog(self)
         dialog.setWindowTitle("Upload README")
-        dialog.setGeometry(150, 150, 400, 150)
+        dialog.setGeometry(150, 150, 400, 200)
         dialog.setStyleSheet(self._get_stylesheet())
         
         layout = QFormLayout()
@@ -256,6 +273,11 @@ class ReadmeViewerWindow(QMainWindow):
         username_input = QLineEdit()
         username_input.setPlaceholderText("Enter your username")
         layout.addRow(username_label, username_input)
+
+        os_label = QLabel("OS Type:")
+        os_combo = QComboBox()
+        os_combo.addItems(["Windows", "Linux", "Cisco", "Other"])
+        layout.addRow(os_label, os_combo)
 
         button_box = QHBoxLayout()
         ok_btn = QPushButton("OK")
@@ -270,6 +292,7 @@ class ReadmeViewerWindow(QMainWindow):
 
         if dialog.exec() == QDialog.DialogCode.Accepted:
             username = username_input.text().strip()
+            os_type = os_combo.currentText()
             if not username:
                 QMessageBox.warning(self, "Invalid Input", "Please enter your username.")
                 return
@@ -286,10 +309,37 @@ class ReadmeViewerWindow(QMainWindow):
                     with open(file_path, "r") as f:
                         content = f.read()
                     
-                    readme_file = self.readmes_dir / f"{team_name}_{username}_readme.txt"
-                    with open(readme_file, "w") as f:
-                        f.write(content)
+                    connection = get_connection()
+                    if not connection:
+                        QMessageBox.critical(self, "Error", "Could not connect to database.")
+                        return
+
+                    cursor = connection.cursor()
                     
+                    # Get user_id from username
+                    cursor.execute("SELECT id FROM users WHERE username = %s", (username,))
+                    user_result = cursor.fetchone()
+                    if not user_result:
+                        QMessageBox.warning(self, "User Not Found", f"User '{username}' not found.")
+                        cursor.close()
+                        close_connection(connection)
+                        return
+                    
+                    user_id = user_result[0]
+                    team_id = self.current_team_id
+
+                    # Update or insert README
+                    cursor.execute(
+                        "INSERT INTO readmes (team_id, user_id, title, os_type, content) "
+                        "VALUES (%s, %s, %s, %s, %s) "
+                        "ON DUPLICATE KEY UPDATE content = VALUES(content), os_type = VALUES(os_type), updated_at = CURRENT_TIMESTAMP",
+                        (team_id, user_id, f"{username}'s README", os_type, content)
+                    )
+                    
+                    connection.commit()
+                    cursor.close()
+                    close_connection(connection)
+
                     QMessageBox.information(self, "Success", "README uploaded successfully!")
                     self._refresh_members()
                 except Exception as e:
@@ -303,29 +353,42 @@ class ReadmeViewerWindow(QMainWindow):
             return
 
         username = current_item.text()
-        team_name = self.team_combo.currentText()
-        readme_file = self.readmes_dir / f"{team_name}_{username}_readme.txt"
-
-        if not readme_file.exists():
-            QMessageBox.warning(self, "File Not Found", f"No README file found for {username}.")
+        
+        connection = get_connection()
+        if not connection:
+            QMessageBox.critical(self, "Error", "Could not connect to database.")
             return
 
-        save_path, _ = QFileDialog.getSaveFileName(
-            self,
-            "Save README File",
-            f"{username}_readme.txt",
-            "Text Files (*.txt);;All Files (*)"
-        )
+        try:
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute(
+                "SELECT content FROM readmes WHERE team_id = %s AND user_id = "
+                "(SELECT id FROM users WHERE username = %s)",
+                (self.current_team_id, username)
+            )
+            result = cursor.fetchone()
+            cursor.close()
 
-        if save_path:
-            try:
-                with open(readme_file, "r") as f:
-                    content = f.read()
+            if not result:
+                QMessageBox.warning(self, "File Not Found", f"No README file found for {username}.")
+                close_connection(connection)
+                return
+
+            save_path, _ = QFileDialog.getSaveFileName(
+                self,
+                "Save README File",
+                f"{username}_readme.txt",
+                "Text Files (*.txt);;All Files (*)"
+            )
+
+            if save_path:
                 with open(save_path, "w") as f:
-                    f.write(content)
+                    f.write(result['content'])
                 QMessageBox.information(self, "Success", "README downloaded successfully!")
-            except Exception as e:
-                QMessageBox.critical(self, "Error", f"Failed to download README: {str(e)}")
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to download README: {str(e)}")
+        finally:
+            close_connection(connection)
 
     def _get_stylesheet(self) -> str:
         """Return the stylesheet for the window."""
