@@ -1,6 +1,6 @@
 """
-Stylesheet module for professional, modern UI appearance.
-Includes colors, fonts, and component styles inspired by modern design systems.
+Simplified stylesheet module for clean, professional UI.
+Uses only Qt Style Sheet (QSS) compatible properties.
 """
 
 STYLESHEET = """
@@ -8,6 +8,7 @@ STYLESHEET = """
         background-color: #f5f5f5;
         color: #333333;
         font-family: "Segoe UI", Arial, sans-serif;
+        font-size: 11px;
     }
 
     QMainWindow, QStackedWidget {
@@ -20,16 +21,14 @@ STYLESHEET = """
     }
 
     QLabel#title {
-        font-size: 28px;
+        font-size: 24px;
         font-weight: bold;
         color: #1e40af;
-        margin-bottom: 10px;
     }
 
     QLabel#subtitle {
-        font-size: 14px;
+        font-size: 11px;
         color: #666666;
-        margin-bottom: 20px;
     }
 
     QLabel#status-success {
@@ -49,13 +48,11 @@ STYLESHEET = """
 
     /* Line Edits */
     QLineEdit {
-        border: 2px solid #e5e7eb;
-        border-radius: 6px;
-        padding: 10px 12px;
-        font-size: 13px;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        padding: 8px;
         background-color: #ffffff;
         color: #333333;
-        selection-background-color: #1e40af;
     }
 
     QLineEdit:focus {
@@ -63,16 +60,11 @@ STYLESHEET = """
         background-color: #f0f9ff;
     }
 
-    QLineEdit::placeholder {
-        color: #9ca3af;
-    }
-
     /* ComboBox */
     QComboBox {
-        border: 2px solid #e5e7eb;
-        border-radius: 6px;
-        padding: 8px 12px;
-        font-size: 13px;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        padding: 6px;
         background-color: #ffffff;
         color: #333333;
     }
@@ -82,14 +74,8 @@ STYLESHEET = """
         background-color: #f0f9ff;
     }
 
-    QComboBox::drop-down {
-        border: none;
-        width: 30px;
-    }
-
     QComboBox QAbstractItemView {
-        border: 1px solid #e5e7eb;
-        border-radius: 4px;
+        border: 1px solid #d1d5db;
         background-color: #ffffff;
         color: #333333;
         selection-background-color: #1e40af;
@@ -101,11 +87,10 @@ STYLESHEET = """
         background-color: #1e40af;
         color: #ffffff;
         border: none;
-        border-radius: 6px;
-        padding: 10px 20px;
-        font-size: 13px;
+        border-radius: 4px;
+        padding: 8px 16px;
         font-weight: 600;
-        cursor: pointer;
+        min-height: 36px;
     }
 
     QPushButton:hover {
@@ -123,7 +108,6 @@ STYLESHEET = """
 
     QPushButton#secondary {
         background-color: #6b7280;
-        color: #ffffff;
     }
 
     QPushButton#secondary:hover {
@@ -132,29 +116,22 @@ STYLESHEET = """
 
     QPushButton#danger {
         background-color: #dc2626;
-        color: #ffffff;
     }
 
     QPushButton#danger:hover {
         background-color: #b91c1c;
     }
 
-    /* Scroll Area */
-    QScrollArea {
-        border: none;
-        background-color: #ffffff;
-    }
-
+    /* ScrollBar */
     QScrollBar:vertical {
         border: none;
         background-color: #f5f5f5;
-        width: 12px;
-        border-radius: 6px;
+        width: 10px;
     }
 
     QScrollBar::handle:vertical {
         background-color: #cbd5e1;
-        border-radius: 6px;
+        border-radius: 5px;
         min-height: 20px;
     }
 
@@ -165,13 +142,12 @@ STYLESHEET = """
     QScrollBar:horizontal {
         border: none;
         background-color: #f5f5f5;
-        height: 12px;
-        border-radius: 6px;
+        height: 10px;
     }
 
     QScrollBar::handle:horizontal {
         background-color: #cbd5e1;
-        border-radius: 6px;
+        border-radius: 5px;
         min-width: 20px;
     }
 
@@ -182,43 +158,38 @@ STYLESHEET = """
     /* Frame */
     QFrame {
         border: 1px solid #e5e7eb;
-        border-radius: 8px;
+        border-radius: 6px;
         background-color: #ffffff;
     }
 
     QFrame#card {
         padding: 20px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        background-color: #ffffff;
     }
 
-    /* Group Box */
+    /* GroupBox */
     QGroupBox {
-        border: 2px solid #e5e7eb;
-        border-radius: 6px;
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
         margin-top: 10px;
-        padding-top: 15px;
+        padding-top: 10px;
         font-weight: 600;
         color: #1e40af;
     }
 
-    QGroupBox::title {
-        subcontrol-origin: margin;
-        left: 10px;
-        padding: 0 5px;
-    }
-
-    /* Tab Widget */
+    /* TabWidget */
     QTabWidget::pane {
         border: 1px solid #e5e7eb;
-        border-radius: 6px;
     }
 
     QTabBar::tab {
         background-color: #f3f4f6;
         color: #6b7280;
         border: 1px solid #e5e7eb;
-        padding: 8px 16px;
+        padding: 6px 14px;
         margin-right: 2px;
-        border-radius: 4px 4px 0 0;
         font-weight: 500;
     }
 
@@ -233,16 +204,15 @@ STYLESHEET = """
         color: #1e40af;
     }
 
-    /* Table Widget */
+    /* TableWidget */
     QTableWidget {
         border: 1px solid #e5e7eb;
-        border-radius: 6px;
         background-color: #ffffff;
         gridline-color: #f3f4f6;
     }
 
     QTableWidget::item {
-        padding: 8px;
+        padding: 4px;
         color: #333333;
     }
 
@@ -254,17 +224,17 @@ STYLESHEET = """
     QHeaderView::section {
         background-color: #f3f4f6;
         color: #1f2937;
-        padding: 8px;
+        padding: 6px;
         border: none;
         font-weight: 600;
-        border-bottom: 2px solid #e5e7eb;
+        border-bottom: 1px solid #e5e7eb;
     }
 
-    /* Spinbox and other widgets */
+    /* Spinbox */
     QSpinBox, QDoubleSpinBox {
-        border: 2px solid #e5e7eb;
-        border-radius: 6px;
-        padding: 8px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        padding: 6px;
         background-color: #ffffff;
         color: #333333;
     }
@@ -274,25 +244,31 @@ STYLESHEET = """
         background-color: #f0f9ff;
     }
 
+    /* Checkbox and Radio */
     QCheckBox, QRadioButton {
         color: #333333;
         spacing: 6px;
     }
 
     QCheckBox::indicator, QRadioButton::indicator {
-        width: 18px;
-        height: 18px;
-        border-radius: 3px;
-        border: 2px solid #cbd5e1;
+        width: 16px;
+        height: 16px;
+        border: 1px solid #cbd5e1;
         background-color: #ffffff;
     }
 
     QCheckBox::indicator:checked, QRadioButton::indicator:checked {
         background-color: #1e40af;
-        border: 2px solid #1e40af;
+        border: 1px solid #1e40af;
     }
 
     QCheckBox::indicator:hover, QRadioButton::indicator:hover {
-        border: 2px solid #1e40af;
+        border: 1px solid #1e40af;
+    }
+
+    /* Scroll Area */
+    QScrollArea {
+        border: none;
+        background-color: #ffffff;
     }
 """

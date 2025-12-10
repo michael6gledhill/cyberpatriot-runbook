@@ -1,2 +1,2 @@
-PySide6>=6.9.0
-sqlite3-python
+PySide6==6.10.1
+
