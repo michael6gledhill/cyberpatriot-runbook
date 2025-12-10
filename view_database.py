@@ -6,7 +6,7 @@ import sys
 from db_config import get_connection, close_connection
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
-    QLabel, QPushButton, QTableWidget, QTableWidgetItem, QMessageBox, QTabWidget
+    QLabel, QPushButton, QTableWidget, QTableWidgetItem, QMessageBox, QTabWidget, QDialog, QFormLayout, QLineEdit, QComboBox
 )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont
@@ -18,6 +18,7 @@ class DatabaseViewerWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("CyberPatriot Runbook - Database Viewer")
         self.setGeometry(100, 100, 1200, 700)
+        self.setStyleSheet(self._get_stylesheet())
         
         # Create central widget
         central_widget = QWidget()
@@ -26,12 +27,8 @@ class DatabaseViewerWindow(QMainWindow):
         layout = QVBoxLayout(central_widget)
         
         # Title
-        title = QLabel("Database Viewer")
-        title_font = QFont()
-        title_font.setPointSize(16)
-        title_font.setBold(True)
-        title.setFont(title_font)
-        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title = QLabel("CyberPatriot Database Viewer")
+        title.setFont(QFont("Arial", 16, QFont.Weight.Bold))
         layout.addWidget(title)
         
         # Create tab widget
@@ -79,6 +76,17 @@ class DatabaseViewerWindow(QMainWindow):
         self.users_table.resizeColumnsToContents()
         layout.addWidget(self.users_table)
         
+        # Action buttons
+        button_layout = QHBoxLayout()
+        edit_btn = QPushButton("Edit Selected")
+        edit_btn.clicked.connect(self.edit_user)
+        delete_btn = QPushButton("Delete Selected")
+        delete_btn.clicked.connect(self.delete_user)
+        button_layout.addStretch()
+        button_layout.addWidget(edit_btn)
+        button_layout.addWidget(delete_btn)
+        layout.addLayout(button_layout)
+        
         self.load_all_users()
     
     def init_teams_tab(self):
@@ -90,6 +98,20 @@ class DatabaseViewerWindow(QMainWindow):
         self.teams_table.setHorizontalHeaderLabels(["ID", "Team Name", "Team Code", "Division", "Created By", "Created At"])
         self.teams_table.resizeColumnsToContents()
         layout.addWidget(self.teams_table)
+        
+        # Action buttons
+        button_layout = QHBoxLayout()
+        create_btn = QPushButton("Create Team")
+        create_btn.clicked.connect(self.create_team)
+        edit_btn = QPushButton("Edit Selected")
+        edit_btn.clicked.connect(self.edit_team)
+        delete_btn = QPushButton("Delete Selected")
+        delete_btn.clicked.connect(self.delete_team)
+        button_layout.addStretch()
+        button_layout.addWidget(create_btn)
+        button_layout.addWidget(edit_btn)
+        button_layout.addWidget(delete_btn)
+        layout.addLayout(button_layout)
         
         self.load_teams()
     
@@ -103,6 +125,17 @@ class DatabaseViewerWindow(QMainWindow):
         self.team_members_table.resizeColumnsToContents()
         layout.addWidget(self.team_members_table)
         
+        # Action buttons
+        button_layout = QHBoxLayout()
+        reassign_btn = QPushButton("Reassign to Team")
+        reassign_btn.clicked.connect(self.reassign_member)
+        unassign_btn = QPushButton("Unassign from Team")
+        unassign_btn.clicked.connect(self.unassign_member)
+        button_layout.addStretch()
+        button_layout.addWidget(reassign_btn)
+        button_layout.addWidget(unassign_btn)
+        layout.addLayout(button_layout)
+        
         self.load_team_members()
     
     def init_pending_approvals_tab(self):
@@ -110,10 +143,21 @@ class DatabaseViewerWindow(QMainWindow):
         layout = QVBoxLayout(self.pending_approvals_tab)
         
         self.pending_table = QTableWidget()
-        self.pending_table.setColumnCount(6)
-        self.pending_table.setHorizontalHeaderLabels(["Member ID", "User Name", "Username", "Team", "Role", "Requested"])
+        self.pending_table.setColumnCount(7)
+        self.pending_table.setHorizontalHeaderLabels(["Member ID", "User Name", "Username", "Team Name", "Team Code", "Role", "Requested"])
         self.pending_table.resizeColumnsToContents()
         layout.addWidget(self.pending_table)
+        
+        # Action buttons
+        button_layout = QHBoxLayout()
+        approve_btn = QPushButton("Approve Selected")
+        approve_btn.clicked.connect(self.approve_member)
+        reject_btn = QPushButton("Reject Selected")
+        reject_btn.clicked.connect(self.reject_member)
+        button_layout.addStretch()
+        button_layout.addWidget(approve_btn)
+        button_layout.addWidget(reject_btn)
+        layout.addLayout(button_layout)
         
         self.load_pending_approvals()
     
@@ -258,6 +302,7 @@ class DatabaseViewerWindow(QMainWindow):
                     u.name,
                     u.username,
                     t.name,
+                    t.team_code,
                     r.name,
                     tm.created_at
                 FROM team_members tm
@@ -371,6 +416,499 @@ Approved: {approved}<br><br>
         finally:
             close_connection(connection)
     
+    def edit_user(self):
+        """Edit selected user"""
+        selected_rows = self.users_table.selectionModel().selectedRows()
+        if not selected_rows:
+            QMessageBox.warning(self, "No Selection", "Please select a user to edit")
+            return
+        
+        row_idx = selected_rows[0].row()
+        user_id = int(self.users_table.item(row_idx, 0).text())
+        name = self.users_table.item(row_idx, 1).text()
+        username = self.users_table.item(row_idx, 2).text()
+        email = self.users_table.item(row_idx, 3).text()
+        is_active = self.users_table.item(row_idx, 4).text()
+        
+        # Create edit dialog
+        from PySide6.QtWidgets import QDialog, QLineEdit, QCheckBox, QDialogButtonBox
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Edit User")
+        dialog.setGeometry(200, 200, 400, 250)
+        
+        layout = QVBoxLayout(dialog)
+        
+        layout.addWidget(QLabel("Name:"))
+        name_input = QLineEdit()
+        name_input.setText(name)
+        layout.addWidget(name_input)
+        
+        layout.addWidget(QLabel("Username:"))
+        username_input = QLineEdit()
+        username_input.setText(username)
+        layout.addWidget(username_input)
+        
+        layout.addWidget(QLabel("Email:"))
+        email_input = QLineEdit()
+        email_input.setText(email)
+        layout.addWidget(email_input)
+        
+        layout.addWidget(QLabel("Active:"))
+        active_checkbox = QCheckBox("User is active")
+        active_checkbox.setChecked(is_active.lower() == "true" or is_active == "1")
+        layout.addWidget(active_checkbox)
+        
+        # Dialog buttons
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel)
+        buttons.accepted.connect(dialog.accept)
+        buttons.rejected.connect(dialog.reject)
+        layout.addWidget(buttons)
+        
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            connection = get_connection()
+            if not connection:
+                QMessageBox.critical(self, "Error", "Cannot connect to database")
+                return
+            
+            try:
+                cursor = connection.cursor()
+                cursor.execute("""
+                    UPDATE users SET name = %s, username = %s, email = %s, is_active = %s
+                    WHERE id = %s
+                """, (name_input.text(), username_input.text(), email_input.text(), 
+                      active_checkbox.isChecked(), user_id))
+                connection.commit()
+                cursor.close()
+                QMessageBox.information(self, "Success", "User updated successfully")
+                self.load_all_users()
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Failed to update user: {str(e)}")
+            finally:
+                close_connection(connection)
+    
+    def delete_user(self):
+        """Delete selected user"""
+        selected_rows = self.users_table.selectionModel().selectedRows()
+        if not selected_rows:
+            QMessageBox.warning(self, "No Selection", "Please select a user to delete")
+            return
+        
+        row_idx = selected_rows[0].row()
+        user_id = int(self.users_table.item(row_idx, 0).text())
+        username = self.users_table.item(row_idx, 2).text()
+        
+        # Confirm deletion
+        reply = QMessageBox.question(
+            self,
+            "Confirm Delete",
+            f"Are you sure you want to delete user '{username}'?\n\nThis will also delete associated team memberships.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        
+        if reply == QMessageBox.StandardButton.Yes:
+            connection = get_connection()
+            if not connection:
+                QMessageBox.critical(self, "Error", "Cannot connect to database")
+                return
+            
+            try:
+                cursor = connection.cursor()
+                # Delete associated team members first
+                cursor.execute("DELETE FROM team_members WHERE user_id = %s", (user_id,))
+                # Delete the user
+                cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+                connection.commit()
+                cursor.close()
+                QMessageBox.information(self, "Success", f"User '{username}' deleted successfully")
+                self.load_all_users()
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Failed to delete user: {str(e)}")
+                connection.rollback()
+            finally:
+                close_connection(connection)
+    
+    def create_team(self):
+        """Create a new team"""
+        from PySide6.QtWidgets import QDialog, QLineEdit, QComboBox, QLabel, QDialogButtonBox
+        
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Create Team")
+        dialog.setGeometry(200, 200, 400, 300)
+        
+        layout = QVBoxLayout(dialog)
+        
+        layout.addWidget(QLabel("Team Name:"))
+        name_input = QLineEdit()
+        layout.addWidget(name_input)
+        
+        layout.addWidget(QLabel("Team Code (XX-XXXX):"))
+        code_input = QLineEdit()
+        code_input.setPlaceholderText("e.g., 00-0000")
+        layout.addWidget(code_input)
+        
+        layout.addWidget(QLabel("Division:"))
+        division_combo = QComboBox()
+        division_combo.addItems(["Open", "HighSchool", "MiddleSchool", "JROTC", "CivilAirPatrol"])
+        layout.addWidget(division_combo)
+        
+        # Dialog buttons
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel)
+        buttons.accepted.connect(dialog.accept)
+        buttons.rejected.connect(dialog.reject)
+        layout.addWidget(buttons)
+        
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            team_name = name_input.text().strip()
+            team_code = code_input.text().strip()
+            division = division_combo.currentText()
+            
+            # Validate inputs
+            if not team_name or not team_code:
+                QMessageBox.warning(self, "Validation Error", "Please fill in all fields")
+                return
+            
+            # Validate team code format
+            import re
+            if not re.match(r'^\d{2}-\d{4}$', team_code):
+                QMessageBox.warning(self, "Invalid Format", "Team code must be in format: XX-XXXX")
+                return
+            
+            connection = get_connection()
+            if not connection:
+                QMessageBox.critical(self, "Error", "Cannot connect to database")
+                return
+            
+            try:
+                cursor = connection.cursor()
+                cursor.execute("""
+                    INSERT INTO teams (name, team_code, division)
+                    VALUES (%s, %s, %s)
+                """, (team_name, team_code, division))
+                connection.commit()
+                cursor.close()
+                QMessageBox.information(self, "Success", f"Team '{team_name}' created successfully")
+                self.load_teams()
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Failed to create team: {str(e)}")
+            finally:
+                close_connection(connection)
+    
+    def edit_team(self):
+        """Edit selected team"""
+        selected_rows = self.teams_table.selectionModel().selectedRows()
+        if not selected_rows:
+            QMessageBox.warning(self, "No Selection", "Please select a team to edit")
+            return
+        
+        from PySide6.QtWidgets import QDialog, QLineEdit, QComboBox, QLabel, QDialogButtonBox
+        
+        row_idx = selected_rows[0].row()
+        team_id = int(self.teams_table.item(row_idx, 0).text())
+        team_name = self.teams_table.item(row_idx, 1).text()
+        team_code = self.teams_table.item(row_idx, 2).text()
+        division = self.teams_table.item(row_idx, 3).text()
+        
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Edit Team")
+        dialog.setGeometry(200, 200, 400, 250)
+        
+        layout = QVBoxLayout(dialog)
+        
+        layout.addWidget(QLabel("Team Name:"))
+        name_input = QLineEdit()
+        name_input.setText(team_name)
+        layout.addWidget(name_input)
+        
+        layout.addWidget(QLabel("Team Code (XX-XXXX):"))
+        code_input = QLineEdit()
+        code_input.setText(team_code)
+        layout.addWidget(code_input)
+        
+        layout.addWidget(QLabel("Division:"))
+        division_combo = QComboBox()
+        division_combo.addItems(["Open", "HighSchool", "MiddleSchool", "JROTC", "CivilAirPatrol"])
+        division_combo.setCurrentText(division)
+        layout.addWidget(division_combo)
+        
+        # Dialog buttons
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel)
+        buttons.accepted.connect(dialog.accept)
+        buttons.rejected.connect(dialog.reject)
+        layout.addWidget(buttons)
+        
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            new_name = name_input.text().strip()
+            new_code = code_input.text().strip()
+            new_division = division_combo.currentText()
+            
+            # Validate inputs
+            if not new_name or not new_code:
+                QMessageBox.warning(self, "Validation Error", "Please fill in all fields")
+                return
+            
+            # Validate team code format
+            import re
+            if not re.match(r'^\d{2}-\d{4}$', new_code):
+                QMessageBox.warning(self, "Invalid Format", "Team code must be in format: XX-XXXX")
+                return
+            
+            connection = get_connection()
+            if not connection:
+                QMessageBox.critical(self, "Error", "Cannot connect to database")
+                return
+            
+            try:
+                cursor = connection.cursor()
+                cursor.execute("""
+                    UPDATE teams SET name = %s, team_code = %s, division = %s
+                    WHERE id = %s
+                """, (new_name, new_code, new_division, team_id))
+                connection.commit()
+                cursor.close()
+                QMessageBox.information(self, "Success", "Team updated successfully")
+                self.load_teams()
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Failed to update team: {str(e)}")
+            finally:
+                close_connection(connection)
+    
+    def delete_team(self):
+        """Delete selected team"""
+        selected_rows = self.teams_table.selectionModel().selectedRows()
+        if not selected_rows:
+            QMessageBox.warning(self, "No Selection", "Please select a team to delete")
+            return
+        
+        row_idx = selected_rows[0].row()
+        team_id = int(self.teams_table.item(row_idx, 0).text())
+        team_name = self.teams_table.item(row_idx, 1).text()
+        
+        # Confirm deletion
+        reply = QMessageBox.question(
+            self,
+            "Confirm Delete",
+            f"Are you sure you want to delete team '{team_name}'?\n\nThis will also delete all team memberships.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        
+        if reply == QMessageBox.StandardButton.Yes:
+            connection = get_connection()
+            if not connection:
+                QMessageBox.critical(self, "Error", "Cannot connect to database")
+                return
+            
+            try:
+                cursor = connection.cursor()
+                # Delete associated team members first (due to foreign key)
+                cursor.execute("DELETE FROM team_members WHERE team_id = %s", (team_id,))
+                # Delete the team
+                cursor.execute("DELETE FROM teams WHERE id = %s", (team_id,))
+                connection.commit()
+                cursor.close()
+                QMessageBox.information(self, "Success", f"Team '{team_name}' deleted successfully")
+                self.load_teams()
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Failed to delete team: {str(e)}")
+                connection.rollback()
+            finally:
+                close_connection(connection)
+    
+    def approve_member(self):
+        """Approve selected pending member"""
+        selected_rows = self.pending_table.selectionModel().selectedRows()
+        if not selected_rows:
+            QMessageBox.warning(self, "No Selection", "Please select a member to approve")
+            return
+        
+        row_idx = selected_rows[0].row()
+        member_id = int(self.pending_table.item(row_idx, 0).text())
+        username = self.pending_table.item(row_idx, 2).text()
+        team_name = self.pending_table.item(row_idx, 3).text()
+        team_code = self.pending_table.item(row_idx, 4).text()
+        
+        connection = get_connection()
+        if not connection:
+            QMessageBox.critical(self, "Error", "Cannot connect to database")
+            return
+        
+        try:
+            cursor = connection.cursor()
+            cursor.execute("""
+                UPDATE team_members SET status = 'approved'
+                WHERE id = %s
+            """, (member_id,))
+            connection.commit()
+            cursor.close()
+            QMessageBox.information(self, "Success", f"Approved '{username}' for team '{team_name}' ({team_code})")
+            self.load_pending_approvals()
+            self.load_team_members()
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to approve member: {str(e)}")
+        finally:
+            close_connection(connection)
+    
+    def reject_member(self):
+        """Reject selected pending member"""
+        selected_rows = self.pending_table.selectionModel().selectedRows()
+        if not selected_rows:
+            QMessageBox.warning(self, "No Selection", "Please select a member to reject")
+            return
+        
+        row_idx = selected_rows[0].row()
+        member_id = int(self.pending_table.item(row_idx, 0).text())
+        username = self.pending_table.item(row_idx, 2).text()
+        team_name = self.pending_table.item(row_idx, 3).text()
+        team_code = self.pending_table.item(row_idx, 4).text()
+        
+        # Confirm rejection
+        reply = QMessageBox.question(
+            self,
+            "Confirm Reject",
+            f"Are you sure you want to reject '{username}' from team '{team_name}' ({team_code})?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        
+        if reply == QMessageBox.StandardButton.Yes:
+            connection = get_connection()
+            if not connection:
+                QMessageBox.critical(self, "Error", "Cannot connect to database")
+                return
+            
+            try:
+                cursor = connection.cursor()
+                cursor.execute("""
+                    UPDATE team_members SET status = 'rejected'
+                    WHERE id = %s
+                """, (member_id,))
+                connection.commit()
+                cursor.close()
+                QMessageBox.information(self, "Success", f"Rejected '{username}' from team '{team_name}' ({team_code})")
+                self.load_pending_approvals()
+                self.load_team_members()
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Failed to reject member: {str(e)}")
+            finally:
+                close_connection(connection)
+    
+    def reassign_member(self):
+        """Reassign selected member to a different team"""
+        selected_rows = self.team_members_table.selectionModel().selectedRows()
+        if not selected_rows:
+            QMessageBox.warning(self, "No Selection", "Please select a member to reassign")
+            return
+        
+        from PySide6.QtWidgets import QDialog, QComboBox, QLabel, QDialogButtonBox
+        
+        row_idx = selected_rows[0].row()
+        member_id = int(self.team_members_table.item(row_idx, 0).text())
+        username = self.team_members_table.item(row_idx, 2).text()
+        current_team = self.team_members_table.item(row_idx, 3).text()
+        
+        # Get all available teams
+        connection = get_connection()
+        if not connection:
+            QMessageBox.critical(self, "Error", "Cannot connect to database")
+            return
+        
+        try:
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute("SELECT id, name, team_code FROM teams ORDER BY name")
+            teams = cursor.fetchall()
+            cursor.close()
+        finally:
+            close_connection(connection)
+        
+        if not teams:
+            QMessageBox.warning(self, "No Teams", "No teams available in the system")
+            return
+        
+        # Create dialog
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Reassign Member")
+        dialog.setGeometry(200, 200, 400, 150)
+        
+        layout = QVBoxLayout(dialog)
+        
+        layout.addWidget(QLabel(f"Reassigning '{username}' from '{current_team}'"))
+        layout.addWidget(QLabel("Select new team:"))
+        
+        team_combo = QComboBox()
+        for team in teams:
+            team_combo.addItem(f"{team['name']} ({team['team_code']})", team['id'])
+        layout.addWidget(team_combo)
+        
+        # Dialog buttons
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel)
+        buttons.accepted.connect(dialog.accept)
+        buttons.rejected.connect(dialog.reject)
+        layout.addWidget(buttons)
+        
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            new_team_id = team_combo.currentData()
+            
+            connection = get_connection()
+            if not connection:
+                QMessageBox.critical(self, "Error", "Cannot connect to database")
+                return
+            
+            try:
+                cursor = connection.cursor()
+                cursor.execute("""
+                    UPDATE team_members SET team_id = %s
+                    WHERE id = %s
+                """, (new_team_id, member_id))
+                connection.commit()
+                cursor.close()
+                
+                new_team_name = team_combo.currentText()
+                QMessageBox.information(self, "Success", f"Reassigned '{username}' to {new_team_name}")
+                self.load_team_members()
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Failed to reassign member: {str(e)}")
+            finally:
+                close_connection(connection)
+    
+    def unassign_member(self):
+        """Remove member from their current team"""
+        selected_rows = self.team_members_table.selectionModel().selectedRows()
+        if not selected_rows:
+            QMessageBox.warning(self, "No Selection", "Please select a member to unassign")
+            return
+        
+        row_idx = selected_rows[0].row()
+        member_id = int(self.team_members_table.item(row_idx, 0).text())
+        username = self.team_members_table.item(row_idx, 2).text()
+        team_name = self.team_members_table.item(row_idx, 3).text()
+        
+        # Confirm unassignment
+        reply = QMessageBox.question(
+            self,
+            "Confirm Unassign",
+            f"Are you sure you want to unassign '{username}' from team '{team_name}'?\n\nThis will remove them from the team.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        
+        if reply == QMessageBox.StandardButton.Yes:
+            connection = get_connection()
+            if not connection:
+                QMessageBox.critical(self, "Error", "Cannot connect to database")
+                return
+            
+            try:
+                cursor = connection.cursor()
+                # Delete the team membership
+                cursor.execute("""
+                    DELETE FROM team_members WHERE id = %s
+                """, (member_id,))
+                connection.commit()
+                cursor.close()
+                QMessageBox.information(self, "Success", f"Unassigned '{username}' from team '{team_name}'")
+                self.load_team_members()
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Failed to unassign member: {str(e)}")
+            finally:
+                close_connection(connection)
+    
     def refresh_all_data(self):
         """Refresh all data in all tabs"""
         self.load_all_users()
@@ -380,6 +918,77 @@ Approved: {approved}<br><br>
         self.load_roles()
         self.load_statistics()
         QMessageBox.information(self, "Success", "All data refreshed successfully")
+
+    def _get_stylesheet(self) -> str:
+        """Return the stylesheet for the window."""
+        return """
+        QMainWindow {
+            background-color: #f5f5f5;
+        }
+        QLabel {
+            color: #333333;
+            font-weight: bold;
+        }
+        QLineEdit {
+            padding: 8px;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+            background-color: white;
+        }
+        QLineEdit:focus {
+            border: 2px solid #4CAF50;
+        }
+        QComboBox {
+            padding: 8px;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+            background-color: white;
+        }
+        QComboBox:focus {
+            border: 2px solid #4CAF50;
+        }
+        QPushButton {
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+            border: none;
+            border-radius: 4px;
+            padding: 10px;
+        }
+        QPushButton:hover {
+            background-color: #45a049;
+        }
+        QPushButton:pressed {
+            background-color: #3d8b40;
+        }
+        QTableWidget {
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+            background-color: white;
+        }
+        QHeaderView::section {
+            background-color: #4CAF50;
+            color: white;
+            padding: 5px;
+            font-weight: bold;
+        }
+        QTabWidget::pane {
+            border: 1px solid #cccccc;
+        }
+        QTabBar::tab {
+            background-color: #e0e0e0;
+            color: #333333;
+            padding: 8px 20px;
+            margin-right: 2px;
+        }
+        QTabBar::tab:selected {
+            background-color: #4CAF50;
+            color: white;
+        }
+        QDialog {
+            background-color: #f5f5f5;
+        }
+        """
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

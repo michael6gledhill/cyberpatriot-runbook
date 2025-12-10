@@ -434,6 +434,33 @@ class LoginWindow(QMainWindow):
         except Exception as e:
             self._show_message("Error", f"An error occurred during login: {str(e)}", QMessageBox.Icon.Critical)
 
+    def _validate_team_code(self, team_code: str) -> tuple[bool, str]:
+        """Validate team code format (XX-XXXX where X is digit)."""
+        import re
+        # Pattern: 2 digits, dash, 4 digits (e.g., 00-0000)
+        pattern = r'^\d{2}-\d{4}$'
+        if not re.match(pattern, team_code):
+            return False, "Team code must be in format: XX-XXXX (e.g., 00-0000)"
+        return True, ""
+    
+    def _get_team_by_code(self, team_code: str) -> dict | None:
+        """Get team by team code from database."""
+        connection = get_connection()
+        if not connection:
+            return None
+        
+        try:
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute(
+                "SELECT id, name, team_code FROM teams WHERE team_code = %s",
+                (team_code,)
+            )
+            result = cursor.fetchone()
+            cursor.close()
+            return result
+        finally:
+            close_connection(connection)
+
     def _show_message(self, title: str, message: str, icon: QMessageBox.Icon = QMessageBox.Icon.Information):
         """Show a message box with selectable text."""
         box = QMessageBox(self)
@@ -481,21 +508,23 @@ class LoginWindow(QMainWindow):
             self._show_message("Username Exists", "This username is already taken.", QMessageBox.Icon.Warning)
             return
 
-        # For competitor/team_captain users, team ID is required
+        # For competitor/team_captain users, team code is required
         team = None
         if role_str in ["competitor", "team_captain"]:
             if not team_id_str:
-                self._show_message("Team Required", "Team ID is required for this role.", QMessageBox.Icon.Warning)
+                self._show_message("Team Required", "Team code is required for this role.", QMessageBox.Icon.Warning)
                 return
 
-            try:
-                team_id_int = int(team_id_str)
-                team = TeamRepository.get_team_by_id(team_id_int)
-                if not team:
-                    self._show_message("Team Not Found", f"Team ID '{team_id_str}' does not exist.", QMessageBox.Icon.Warning)
-                    return
-            except ValueError:
-                self._show_message("Invalid Team ID", "Team ID must be a number.", QMessageBox.Icon.Warning)
+            # Validate team code format
+            is_valid, error_msg = self._validate_team_code(team_id_str)
+            if not is_valid:
+                self._show_message("Invalid Format", error_msg, QMessageBox.Icon.Warning)
+                return
+            
+            # Check if team exists by team code
+            team = self._get_team_by_code(team_id_str)
+            if not team:
+                self._show_message("Team Not Found", f"Team code '{team_id_str}' does not exist.", QMessageBox.Icon.Warning)
                 return
 
         try:
