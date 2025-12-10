@@ -82,6 +82,8 @@ set DATABASE_URL=mysql+pymysql://cp_user:your-strong-password@<SERVER_IP>:3306/c
 alembic upgrade head
 ```
 
+If you see “No 'script_location' key found”, make sure you are in the folder that contains `alembic.ini` (the repository root), then run the command again.
+
 ## Step 4: Run the App (on your computer)
 Any computer can run the app. Repeat these steps on each computer that needs it.
 
@@ -92,6 +94,18 @@ pip install -r requirements.txt
 set DATABASE_URL=mysql+pymysql://cp_user:your-strong-password@<SERVER_IP>:3306/cyberpatriot_runbook
 python main.py
 ```
+
+First-time admin setup:
+- Create the initial admin account using the helper script:
+```bat
+cd cyberpatriot-runbook
+set DATABASE_URL=mysql+pymysql://cp_user:your-strong-password@<SERVER_IP>:3306/cyberpatriot_runbook
+set DEFAULT_ADMIN_EMAIL=admin@cyberpatriot.local
+set DEFAULT_ADMIN_NAME=Admin User
+set DEFAULT_ADMIN_PASSWORD=Admin@123
+python scripts\init_admin.py
+```
+You can omit `DEFAULT_ADMIN_PASSWORD` to be prompted securely.
 
 ## Optional: Server-only Admin Tasks
 If you prefer to run the database setup from the server itself, set `DATABASE_URL` on the server:
@@ -143,6 +157,14 @@ docker compose up -d
 ## Next Steps
 - On a local computer, run the desktop app and create an admin account.
 - Configure teams and begin approvals; data persists on the Pi MySQL.
+ 
+## Quick Checklist (copy these steps)
+- On Ubuntu Server: install Docker and run `docker compose up -d`.
+- On your computer: clone the repo and `pip install -r requirements.txt`.
+- Set `DATABASE_URL` to point at the server IP.
+- Run `alembic upgrade head` to create tables.
+- Run `python main.py` to start the app.
+- Create or initialize the admin user with `scripts\init_admin.py`.
 
 ## Documentation
 - Full project documentation: https://michael6gledhill.github.io/cyberpatriot-runbook/
