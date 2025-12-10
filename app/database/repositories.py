@@ -196,6 +196,13 @@ class TeamRepository:
             team = Team(name=name, team_id=team_id, division=division, created_by_user_id=created_by_user_id)
             session.add(team)
             session.commit()
+            # If the creator is a coach, automatically add them to the team
+            creator = session.query(User).filter(User.id == created_by_user_id).first()
+            if creator and (creator.role == "coach" or (hasattr(creator, 'role') and str(creator.role).lower() == 'coach')):
+                creator.team_id = team.id
+                # Ensure coach is approved to operate with the team
+                creator.is_approved = True
+                session.commit()
             return team
         except SQLAlchemyError as e:
             session.rollback()
