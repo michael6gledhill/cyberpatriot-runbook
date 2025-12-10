@@ -666,6 +666,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#quick-checklist-copy-these-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Checklist (copy these steps)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#documentation" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -854,6 +865,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#quick-checklist-copy-these-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Checklist (copy these steps)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#documentation" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -943,6 +965,7 @@ pip install -r requirements.txt
 <p>3) Create the tables:</p>
 <pre><code class="language-bash">alembic upgrade head
 </code></pre>
+<p>If you see “No 'script_location' key found”, make sure you are in the folder that contains <code>alembic.ini</code> (the repository root), then run the command again.</p>
 <h2 id="step-4-run-the-app-on-your-computer">Step 4: Run the App (on your computer)</h2>
 <p>Any computer can run the app. Repeat these steps on each computer that needs it.</p>
 <pre><code class="language-bash">git clone https://github.com/michael6gledhill/cyberpatriot-runbook.git
@@ -951,6 +974,16 @@ pip install -r requirements.txt
 set DATABASE_URL=mysql+pymysql://cp_user:your-strong-password@&lt;SERVER_IP&gt;:3306/cyberpatriot_runbook
 python main.py
 </code></pre>
+<p>First-time admin setup:
+- Create the initial admin account using the helper script:</p>
+<pre><code class="language-bat">cd cyberpatriot-runbook
+set DATABASE_URL=mysql+pymysql://cp_user:your-strong-password@&lt;SERVER_IP&gt;:3306/cyberpatriot_runbook
+set DEFAULT_ADMIN_EMAIL=admin@cyberpatriot.local
+set DEFAULT_ADMIN_NAME=Admin User
+set DEFAULT_ADMIN_PASSWORD=Admin@123
+python scripts\init_admin.py
+</code></pre>
+<p>You can omit <code>DEFAULT_ADMIN_PASSWORD</code> to be prompted securely.</p>
 <h2 id="optional-server-only-admin-tasks">Optional: Server-only Admin Tasks</h2>
 <p>If you prefer to run the database setup from the server itself, set <code>DATABASE_URL</code> on the server:</p>
 <pre><code class="language-bash">echo 'DATABASE_URL=mysql+pymysql://cp_user:your-strong-password@localhost:3306/cyberpatriot_runbook' | sudo tee -a /etc/environment
@@ -1001,6 +1034,15 @@ docker compose up -d
 <ul>
 <li>On a local computer, run the desktop app and create an admin account.</li>
 <li>Configure teams and begin approvals; data persists on the Pi MySQL.</li>
+</ul>
+<h2 id="quick-checklist-copy-these-steps">Quick Checklist (copy these steps)</h2>
+<ul>
+<li>On Ubuntu Server: install Docker and run <code>docker compose up -d</code>.</li>
+<li>On your computer: clone the repo and <code>pip install -r requirements.txt</code>.</li>
+<li>Set <code>DATABASE_URL</code> to point at the server IP.</li>
+<li>Run <code>alembic upgrade head</code> to create tables.</li>
+<li>Run <code>python main.py</code> to start the app.</li>
+<li>Create or initialize the admin user with <code>scripts\init_admin.py</code>.</li>
 </ul>
 <h2 id="documentation">Documentation</h2>
 <ul>
