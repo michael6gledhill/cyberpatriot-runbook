@@ -1,11 +1,11 @@
 """
 Entry point for the PySide6 app.
-Provides a basic stacked UI with Login, Signup, and Dashboard skeletons.
-
-Supports both `python -m app` and direct path execution by fixing imports
-when no package context is present.
+Provides a stacked UI with Login, Signup, and Dashboard screens.
+Supports both `python -m app` and direct path execution.
 """
 from PySide6.QtWidgets import QApplication, QStackedWidget
+from PySide6.QtGui import QIcon, QFont
+from PySide6.QtCore import Qt
 import sys
 import os
 
@@ -36,7 +36,7 @@ def build_app() -> QStackedWidget:
     stack.addWidget(signup)     # index 1
     stack.addWidget(dashboard)  # index 2
 
-    # Wire basic navigation signals
+    # Wire navigation signals
     login.goto_signup.connect(lambda: stack.setCurrentIndex(1))
     login.goto_dashboard.connect(lambda: stack.setCurrentIndex(2))
     signup.goto_login.connect(lambda: stack.setCurrentIndex(0))
@@ -47,10 +47,15 @@ def build_app() -> QStackedWidget:
 
 def main():
     app = QApplication(sys.argv)
+
+    # Set application-wide font for consistent rendering
+    app.setFont(QFont("Segoe UI", 10))
+
     stack = build_app()
     stack.setWindowTitle("CyberPatriot Runbook")
     stack.resize(1000, 700)
     stack.show()
+
     sys.exit(app.exec())
 
 
