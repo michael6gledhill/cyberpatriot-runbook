@@ -1,358 +1,388 @@
 """
 Database Viewer for CyberPatriot Runbook
-View and manage all database records including users, teams, roles, and approvals
+View and manage all database records including users, teams, roles, and approvals using PySide6 GUI
 """
 import sys
-from tabulate import tabulate
 from db_config import get_connection, close_connection
+from PySide6.QtWidgets import (
+    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
+    QLabel, QPushButton, QTableWidget, QTableWidgetItem, QMessageBox, QTabWidget
+)
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QFont
 
-def clear_screen():
-    """Clear the terminal screen"""
-    import os
-    os.system('cls' if sys.platform == 'win32' else 'clear')
-
-def print_header(title):
-    """Print a formatted header"""
-    clear_screen()
-    print("=" * 100)
-    print(f" {title}".center(100))
-    print("=" * 100)
-    print()
-
-def view_all_users():
-    """Display all users in the database"""
-    print_header("ALL USERS")
+class DatabaseViewerWindow(QMainWindow):
+    """Main database viewer application"""
     
-    connection = get_connection()
-    if not connection:
-        print("Error: Cannot connect to database")
-        return
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("CyberPatriot Runbook - Database Viewer")
+        self.setGeometry(100, 100, 1200, 700)
+        
+        # Create central widget
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+        
+        layout = QVBoxLayout(central_widget)
+        
+        # Title
+        title = QLabel("Database Viewer")
+        title_font = QFont()
+        title_font.setPointSize(16)
+        title_font.setBold(True)
+        title.setFont(title_font)
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(title)
+        
+        # Create tab widget
+        self.tabs = QTabWidget()
+        layout.addWidget(self.tabs)
+        
+        # Add tabs
+        self.all_users_tab = QWidget()
+        self.teams_tab = QWidget()
+        self.team_members_tab = QWidget()
+        self.pending_approvals_tab = QWidget()
+        self.roles_tab = QWidget()
+        self.statistics_tab = QWidget()
+        
+        self.tabs.addTab(self.all_users_tab, "All Users")
+        self.tabs.addTab(self.teams_tab, "Teams")
+        self.tabs.addTab(self.team_members_tab, "Team Members")
+        self.tabs.addTab(self.pending_approvals_tab, "Pending Approvals")
+        self.tabs.addTab(self.roles_tab, "Roles")
+        self.tabs.addTab(self.statistics_tab, "Statistics")
+        
+        # Initialize tabs
+        self.init_all_users_tab()
+        self.init_teams_tab()
+        self.init_team_members_tab()
+        self.init_pending_approvals_tab()
+        self.init_roles_tab()
+        self.init_statistics_tab()
+        
+        # Refresh button
+        refresh_layout = QHBoxLayout()
+        refresh_btn = QPushButton("Refresh All")
+        refresh_btn.clicked.connect(self.refresh_all_data)
+        refresh_layout.addStretch()
+        refresh_layout.addWidget(refresh_btn)
+        layout.addLayout(refresh_layout)
     
-    try:
-        cursor = connection.cursor()
-        cursor.execute("""
-            SELECT u.id, u.name, u.username, u.email, u.is_active, u.created_at
-            FROM users u
-            ORDER BY u.created_at DESC
-        """)
+    def init_all_users_tab(self):
+        """Initialize the All Users tab"""
+        layout = QVBoxLayout(self.all_users_tab)
         
-        rows = cursor.fetchall()
+        self.users_table = QTableWidget()
+        self.users_table.setColumnCount(6)
+        self.users_table.setHorizontalHeaderLabels(["ID", "Name", "Username", "Email", "Active", "Created At"])
+        self.users_table.resizeColumnsToContents()
+        layout.addWidget(self.users_table)
         
-        if rows:
-            headers = ["ID", "Name", "Username", "Email", "Active", "Created At"]
-            print(tabulate(rows, headers=headers, tablefmt="grid"))
-        else:
-            print("No users found in the database.")
-        
-        cursor.close()
-    finally:
-        close_connection(connection)
-
-def view_user_details():
-    """Display detailed information about a specific user"""
-    print_header("USER DETAILS")
+        self.load_all_users()
     
-    connection = get_connection()
-    if not connection:
-        print("Error: Cannot connect to database")
-        return
-    
-    try:
-        cursor = connection.cursor()
+    def init_teams_tab(self):
+        """Initialize the Teams tab"""
+        layout = QVBoxLayout(self.teams_tab)
         
-        try:
-            user_id = int(input("Enter User ID: "))
-        except ValueError:
-            print("Error: User ID must be a number")
+        self.teams_table = QTableWidget()
+        self.teams_table.setColumnCount(6)
+        self.teams_table.setHorizontalHeaderLabels(["ID", "Team Name", "Team Code", "Division", "Created By", "Created At"])
+        self.teams_table.resizeColumnsToContents()
+        layout.addWidget(self.teams_table)
+        
+        self.load_teams()
+    
+    def init_team_members_tab(self):
+        """Initialize the Team Members tab"""
+        layout = QVBoxLayout(self.team_members_tab)
+        
+        self.team_members_table = QTableWidget()
+        self.team_members_table.setColumnCount(7)
+        self.team_members_table.setHorizontalHeaderLabels(["Member ID", "User Name", "Username", "Team", "Role", "Status", "Joined"])
+        self.team_members_table.resizeColumnsToContents()
+        layout.addWidget(self.team_members_table)
+        
+        self.load_team_members()
+    
+    def init_pending_approvals_tab(self):
+        """Initialize the Pending Approvals tab"""
+        layout = QVBoxLayout(self.pending_approvals_tab)
+        
+        self.pending_table = QTableWidget()
+        self.pending_table.setColumnCount(6)
+        self.pending_table.setHorizontalHeaderLabels(["Member ID", "User Name", "Username", "Team", "Role", "Requested"])
+        self.pending_table.resizeColumnsToContents()
+        layout.addWidget(self.pending_table)
+        
+        self.load_pending_approvals()
+    
+    def init_roles_tab(self):
+        """Initialize the Roles tab"""
+        layout = QVBoxLayout(self.roles_tab)
+        
+        self.roles_table = QTableWidget()
+        self.roles_table.setColumnCount(3)
+        self.roles_table.setHorizontalHeaderLabels(["Role ID", "Role Name", "User Count"])
+        self.roles_table.resizeColumnsToContents()
+        layout.addWidget(self.roles_table)
+        
+        self.load_roles()
+    
+    def init_statistics_tab(self):
+        """Initialize the Statistics tab"""
+        layout = QVBoxLayout(self.statistics_tab)
+        
+        # Statistics labels
+        self.stats_label = QLabel()
+        self.stats_label.setStyleSheet("background-color: #f0f0f0; padding: 20px; border-radius: 5px;")
+        stats_font = QFont()
+        stats_font.setPointSize(12)
+        self.stats_label.setFont(stats_font)
+        layout.addWidget(self.stats_label)
+        
+        layout.addStretch()
+        
+        self.load_statistics()
+    
+    def load_all_users(self):
+        """Load all users into the table"""
+        connection = get_connection()
+        if not connection:
+            QMessageBox.critical(self, "Error", "Cannot connect to database")
             return
         
-        cursor.execute("""
-            SELECT u.id, u.name, u.username, u.email, u.is_active, u.created_at, u.updated_at
-            FROM users u
-            WHERE u.id = %s
-        """, (user_id,))
-        
-        user = cursor.fetchone()
-        
-        if user:
-            print("\n--- User Information ---")
-            print(f"ID: {user[0]}")
-            print(f"Name: {user[1]}")
-            print(f"Username: {user[2]}")
-            print(f"Email: {user[3]}")
-            print(f"Active: {user[4]}")
-            print(f"Created: {user[5]}")
-            print(f"Updated: {user[6]}")
-            
-            # Get team memberships
+        try:
+            cursor = connection.cursor()
             cursor.execute("""
-                SELECT tm.id, t.name, r.name, tm.status, tm.created_at
-                FROM team_members tm
-                JOIN teams t ON tm.team_id = t.id
-                JOIN roles r ON tm.role_id = r.id
-                WHERE tm.user_id = %s
-            """, (user_id,))
-            
-            memberships = cursor.fetchall()
-            print("\n--- Team Memberships ---")
-            if memberships:
-                headers = ["Member ID", "Team Name", "Role", "Status", "Joined"]
-                print(tabulate(memberships, headers=headers, tablefmt="grid"))
-            else:
-                print("No team memberships found.")
-        else:
-            print(f"User with ID {user_id} not found.")
-        
-        cursor.close()
-    finally:
-        close_connection(connection)
-
-def view_teams():
-    """Display all teams in the database"""
-    print_header("ALL TEAMS")
-    
-    connection = get_connection()
-    if not connection:
-        print("Error: Cannot connect to database")
-        return
-    
-    try:
-        cursor = connection.cursor()
-        cursor.execute("""
-            SELECT t.id, t.name, t.team_code, t.division, u.name as created_by, t.created_at
-            FROM teams t
-            LEFT JOIN users u ON t.created_by_user_id = u.id
-            ORDER BY t.created_at DESC
-        """)
-        
-        rows = cursor.fetchall()
-        
-        if rows:
-            headers = ["ID", "Team Name", "Team Code", "Division", "Created By", "Created At"]
-            print(tabulate(rows, headers=headers, tablefmt="grid"))
-        else:
-            print("No teams found in the database.")
-        
-        cursor.close()
-    finally:
-        close_connection(connection)
-
-def view_team_members():
-    """Display all team members with their roles and approval status"""
-    print_header("TEAM MEMBERS & APPROVAL STATUS")
-    
-    connection = get_connection()
-    if not connection:
-        print("Error: Cannot connect to database")
-        return
-    
-    try:
-        cursor = connection.cursor()
-        cursor.execute("""
-            SELECT 
-                tm.id,
-                u.name,
-                u.username,
-                t.name as team,
-                r.name as role,
-                tm.status,
-                tm.created_at
-            FROM team_members tm
-            JOIN users u ON tm.user_id = u.id
-            JOIN teams t ON tm.team_id = t.id
-            JOIN roles r ON tm.role_id = r.id
-            ORDER BY tm.status DESC, t.name, u.name
-        """)
-        
-        rows = cursor.fetchall()
-        
-        if rows:
-            headers = ["Member ID", "User Name", "Username", "Team", "Role", "Status", "Joined"]
-            print(tabulate(rows, headers=headers, tablefmt="grid"))
-            
-            # Summary statistics
-            cursor.execute("""
-                SELECT tm.status, COUNT(*) as count
-                FROM team_members tm
-                GROUP BY tm.status
+                SELECT u.id, u.name, u.username, u.email, u.is_active, u.created_at
+                FROM users u
+                ORDER BY u.created_at DESC
             """)
             
-            stats = cursor.fetchall()
-            print("\n--- Approval Status Summary ---")
-            for status, count in stats:
-                print(f"{status.upper()}: {count}")
-        else:
-            print("No team members found in the database.")
+            rows = cursor.fetchall()
+            self.users_table.setRowCount(len(rows))
+            
+            for row_idx, row_data in enumerate(rows):
+                for col_idx, value in enumerate(row_data):
+                    item = QTableWidgetItem(str(value))
+                    item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                    self.users_table.setItem(row_idx, col_idx, item)
+            
+            self.users_table.resizeColumnsToContents()
+            cursor.close()
+        finally:
+            close_connection(connection)
+    
+    def load_teams(self):
+        """Load all teams into the table"""
+        connection = get_connection()
+        if not connection:
+            QMessageBox.critical(self, "Error", "Cannot connect to database")
+            return
         
-        cursor.close()
-    finally:
-        close_connection(connection)
+        try:
+            cursor = connection.cursor()
+            cursor.execute("""
+                SELECT t.id, t.name, t.team_code, t.division, u.name, t.created_at
+                FROM teams t
+                LEFT JOIN users u ON t.created_by_user_id = u.id
+                ORDER BY t.created_at DESC
+            """)
+            
+            rows = cursor.fetchall()
+            self.teams_table.setRowCount(len(rows))
+            
+            for row_idx, row_data in enumerate(rows):
+                for col_idx, value in enumerate(row_data):
+                    item = QTableWidgetItem(str(value))
+                    item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                    self.teams_table.setItem(row_idx, col_idx, item)
+            
+            self.teams_table.resizeColumnsToContents()
+            cursor.close()
+        finally:
+            close_connection(connection)
+    
+    def load_team_members(self):
+        """Load all team members into the table"""
+        connection = get_connection()
+        if not connection:
+            QMessageBox.critical(self, "Error", "Cannot connect to database")
+            return
+        
+        try:
+            cursor = connection.cursor()
+            cursor.execute("""
+                SELECT 
+                    tm.id,
+                    u.name,
+                    u.username,
+                    t.name,
+                    r.name,
+                    tm.status,
+                    tm.created_at
+                FROM team_members tm
+                JOIN users u ON tm.user_id = u.id
+                JOIN teams t ON tm.team_id = t.id
+                JOIN roles r ON tm.role_id = r.id
+                ORDER BY tm.status DESC, t.name, u.name
+            """)
+            
+            rows = cursor.fetchall()
+            self.team_members_table.setRowCount(len(rows))
+            
+            for row_idx, row_data in enumerate(rows):
+                for col_idx, value in enumerate(row_data):
+                    item = QTableWidgetItem(str(value))
+                    item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                    self.team_members_table.setItem(row_idx, col_idx, item)
+            
+            self.team_members_table.resizeColumnsToContents()
+            cursor.close()
+        finally:
+            close_connection(connection)
+    
+    def load_pending_approvals(self):
+        """Load all pending approvals into the table"""
+        connection = get_connection()
+        if not connection:
+            QMessageBox.critical(self, "Error", "Cannot connect to database")
+            return
+        
+        try:
+            cursor = connection.cursor()
+            cursor.execute("""
+                SELECT 
+                    tm.id,
+                    u.name,
+                    u.username,
+                    t.name,
+                    r.name,
+                    tm.created_at
+                FROM team_members tm
+                JOIN users u ON tm.user_id = u.id
+                JOIN teams t ON tm.team_id = t.id
+                JOIN roles r ON tm.role_id = r.id
+                WHERE tm.status = 'pending'
+                ORDER BY tm.created_at ASC
+            """)
+            
+            rows = cursor.fetchall()
+            self.pending_table.setRowCount(len(rows))
+            
+            for row_idx, row_data in enumerate(rows):
+                for col_idx, value in enumerate(row_data):
+                    item = QTableWidgetItem(str(value))
+                    item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                    self.pending_table.setItem(row_idx, col_idx, item)
+            
+            self.pending_table.resizeColumnsToContents()
+            cursor.close()
+        finally:
+            close_connection(connection)
+    
+    def load_roles(self):
+        """Load all roles into the table"""
+        connection = get_connection()
+        if not connection:
+            QMessageBox.critical(self, "Error", "Cannot connect to database")
+            return
+        
+        try:
+            cursor = connection.cursor()
+            cursor.execute("""
+                SELECT r.id, r.name, COUNT(tm.id)
+                FROM roles r
+                LEFT JOIN team_members tm ON r.id = tm.role_id
+                GROUP BY r.id, r.name
+                ORDER BY r.id
+            """)
+            
+            rows = cursor.fetchall()
+            self.roles_table.setRowCount(len(rows))
+            
+            for row_idx, row_data in enumerate(rows):
+                for col_idx, value in enumerate(row_data):
+                    item = QTableWidgetItem(str(value))
+                    item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                    self.roles_table.setItem(row_idx, col_idx, item)
+            
+            self.roles_table.resizeColumnsToContents()
+            cursor.close()
+        finally:
+            close_connection(connection)
+    
+    def load_statistics(self):
+        """Load and display database statistics"""
+        connection = get_connection()
+        if not connection:
+            QMessageBox.critical(self, "Error", "Cannot connect to database")
+            return
+        
+        try:
+            cursor = connection.cursor()
+            
+            # Get statistics
+            cursor.execute("SELECT COUNT(*) FROM users")
+            total_users = cursor.fetchone()[0]
+            
+            cursor.execute("SELECT COUNT(*) FROM teams")
+            total_teams = cursor.fetchone()[0]
+            
+            cursor.execute("SELECT COUNT(*) FROM team_members")
+            total_members = cursor.fetchone()[0]
+            
+            cursor.execute("SELECT COUNT(*) FROM team_members WHERE status = 'pending'")
+            pending = cursor.fetchone()[0]
+            
+            cursor.execute("SELECT COUNT(*) FROM team_members WHERE status = 'approved'")
+            approved = cursor.fetchone()[0]
+            
+            cursor.execute("""
+                SELECT r.name, COUNT(tm.id)
+                FROM roles r
+                LEFT JOIN team_members tm ON r.id = tm.role_id
+                GROUP BY r.id, r.name
+                ORDER BY COUNT(tm.id) DESC
+            """)
+            role_stats = cursor.fetchall()
+            
+            # Format statistics text
+            stats_text = f"""
+<b>Database Statistics</b><br><br>
+<b>Overall:</b><br>
+Total Users: {total_users}<br>
+Total Teams: {total_teams}<br>
+Total Team Members: {total_members}<br><br>
 
-def view_pending_approvals():
-    """Display all pending approval requests"""
-    print_header("PENDING APPROVALS")
-    
-    connection = get_connection()
-    if not connection:
-        print("Error: Cannot connect to database")
-        return
-    
-    try:
-        cursor = connection.cursor()
-        cursor.execute("""
-            SELECT 
-                tm.id,
-                u.name,
-                u.username,
-                t.name as team,
-                r.name as role,
-                tm.created_at
-            FROM team_members tm
-            JOIN users u ON tm.user_id = u.id
-            JOIN teams t ON tm.team_id = t.id
-            JOIN roles r ON tm.role_id = r.id
-            WHERE tm.status = 'pending'
-            ORDER BY tm.created_at ASC
-        """)
-        
-        rows = cursor.fetchall()
-        
-        if rows:
-            headers = ["Member ID", "User Name", "Username", "Team", "Role", "Requested"]
-            print(tabulate(rows, headers=headers, tablefmt="grid"))
-            print(f"\nTotal Pending Approvals: {len(rows)}")
-        else:
-            print("No pending approvals.")
-        
-        cursor.close()
-    finally:
-        close_connection(connection)
+<b>Approval Status:</b><br>
+Pending: {pending}<br>
+Approved: {approved}<br><br>
 
-def view_roles():
-    """Display all available roles"""
-    print_header("AVAILABLE ROLES")
+<b>Members by Role:</b><br>
+"""
+            for role, count in role_stats:
+                stats_text += f"{role}: {count}<br>"
+            
+            self.stats_label.setText(stats_text)
+            
+            cursor.close()
+        finally:
+            close_connection(connection)
     
-    connection = get_connection()
-    if not connection:
-        print("Error: Cannot connect to database")
-        return
-    
-    try:
-        cursor = connection.cursor()
-        cursor.execute("""
-            SELECT r.id, r.name, COUNT(tm.id) as user_count
-            FROM roles r
-            LEFT JOIN team_members tm ON r.id = tm.role_id
-            GROUP BY r.id, r.name
-            ORDER BY r.id
-        """)
-        
-        rows = cursor.fetchall()
-        
-        if rows:
-            headers = ["Role ID", "Role Name", "User Count"]
-            print(tabulate(rows, headers=headers, tablefmt="grid"))
-        else:
-            print("No roles found in the database.")
-        
-        cursor.close()
-    finally:
-        close_connection(connection)
-
-def view_statistics():
-    """Display database statistics"""
-    print_header("DATABASE STATISTICS")
-    
-    connection = get_connection()
-    if not connection:
-        print("Error: Cannot connect to database")
-        return
-    
-    try:
-        cursor = connection.cursor()
-        
-        # Total users
-        cursor.execute("SELECT COUNT(*) FROM users")
-        total_users = cursor.fetchone()[0]
-        
-        # Total teams
-        cursor.execute("SELECT COUNT(*) FROM teams")
-        total_teams = cursor.fetchone()[0]
-        
-        # Total team members
-        cursor.execute("SELECT COUNT(*) FROM team_members")
-        total_members = cursor.fetchone()[0]
-        
-        # Pending approvals
-        cursor.execute("SELECT COUNT(*) FROM team_members WHERE status = 'pending'")
-        pending = cursor.fetchone()[0]
-        
-        # Approved members
-        cursor.execute("SELECT COUNT(*) FROM team_members WHERE status = 'approved'")
-        approved = cursor.fetchone()[0]
-        
-        # Members by role
-        cursor.execute("""
-            SELECT r.name, COUNT(tm.id) as count
-            FROM roles r
-            LEFT JOIN team_members tm ON r.id = tm.role_id
-            GROUP BY r.id, r.name
-            ORDER BY count DESC
-        """)
-        role_stats = cursor.fetchall()
-        
-        print(f"Total Users: {total_users}")
-        print(f"Total Teams: {total_teams}")
-        print(f"Total Team Members: {total_members}")
-        print(f"\nApproval Status:")
-        print(f"  - Pending: {pending}")
-        print(f"  - Approved: {approved}")
-        print(f"\nMembers by Role:")
-        for role, count in role_stats:
-            print(f"  - {role}: {count}")
-        
-        cursor.close()
-    finally:
-        close_connection(connection)
-
-def main():
-    """Main application loop"""
-    while True:
-        print_header("CyberPatriot Runbook - Database Viewer")
-        print("\nOptions:")
-        print("1. View All Users")
-        print("2. View User Details")
-        print("3. View All Teams")
-        print("4. View Team Members & Status")
-        print("5. View Pending Approvals")
-        print("6. View Available Roles")
-        print("7. View Database Statistics")
-        print("8. Exit")
-        print()
-        
-        choice = input("Enter your choice (1-8): ").strip()
-        
-        if choice == '1':
-            view_all_users()
-        elif choice == '2':
-            view_user_details()
-        elif choice == '3':
-            view_teams()
-        elif choice == '4':
-            view_team_members()
-        elif choice == '5':
-            view_pending_approvals()
-        elif choice == '6':
-            view_roles()
-        elif choice == '7':
-            view_statistics()
-        elif choice == '8':
-            print("\nThank you for using CyberPatriot Runbook Database Viewer!")
-            sys.exit(0)
-        else:
-            print("Invalid choice. Please try again.")
-        
-        input("\nPress Enter to continue...")
+    def refresh_all_data(self):
+        """Refresh all data in all tabs"""
+        self.load_all_users()
+        self.load_teams()
+        self.load_team_members()
+        self.load_pending_approvals()
+        self.load_roles()
+        self.load_statistics()
+        QMessageBox.information(self, "Success", "All data refreshed successfully")
 
 if __name__ == "__main__":
-    main()
+    app = QApplication(sys.argv)
+    window = DatabaseViewerWindow()
+    window.show()
+    sys.exit(app.exec())

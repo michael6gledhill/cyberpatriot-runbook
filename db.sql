@@ -171,6 +171,14 @@ CREATE TABLE IF NOT EXISTS system_settings (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+INSERT IGNORE INTO roles (name) VALUES 
+('admin'),
+('coach'),
+('team_captain'),
+('mentor'),
+('competitor'),
+('pending');
+
 -- Indexes for performance
 CREATE INDEX idx_checklist_category ON checklists(category);
 CREATE INDEX idx_readme_team ON readmes(team_id);

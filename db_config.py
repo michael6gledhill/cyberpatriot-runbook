@@ -8,7 +8,7 @@ from mysql.connector import Error
 DB_CONFIG = {
     'host': 'localhost',
     'user': 'root',
-    'password': 'root',  # Update this with your actual password
+    'password': 'h0gBog89!',  # Update this with your actual password
     'database': 'cyberpatriot_runbook'
 }
 
