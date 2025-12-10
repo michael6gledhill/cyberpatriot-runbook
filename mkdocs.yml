@@ -13,6 +13,7 @@ extra:
 nav:
   - Home: index.md
   - Overview: overview.md
+  - App Architecture: app-architecture.md
   - Setup: setup.md
   - Usage Guide: usage.md
   - Roles & Permissions: roles.md

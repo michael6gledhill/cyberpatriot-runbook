@@ -59,6 +59,9 @@ class LoginWindow(QMainWindow):
 
         self.tab_widget.addTab(self.login_tab, "Login")
         self.tab_widget.addTab(self.signup_tab, "Sign Up")
+        # Documentation tab
+        self.docs_tab = self._create_docs_tab()
+        self.tab_widget.addTab(self.docs_tab, "Documentation")
 
     def _open_settings(self):
         """Open settings dialog to configure backend connection."""
@@ -410,3 +413,49 @@ class LoginWindow(QMainWindow):
             color: white;
         }
         """
+
+    def _create_docs_tab(self) -> QWidget:
+        """Create a documentation tab with a thorough, concise overview."""
+        from PySide6.QtWidgets import QTextEdit
+        widget = QWidget()
+        layout = QVBoxLayout()
+        doc = QTextEdit()
+        doc.setReadOnly(True)
+        doc.setMinimumHeight(400)
+        # Load bundled docs if available; fallback to embedded summary
+        content = self._get_embedded_docs()
+        doc.setText(content)
+        layout.addWidget(doc)
+        widget.setLayout(layout)
+        return widget
+
+    def _get_embedded_docs(self) -> str:
+        """Return a concise, comprehensive app overview for AI prompts."""
+        return (
+            "CyberPatriot Runbook — Architecture & Usage\n\n"
+            "Purpose: Desktop GUI to manage teams, checklists, docs, notes; MySQL backend.\n\n"
+            "Stack: PySide6 GUI; SQLAlchemy ORM; Alembic migrations; PyMySQL; bcrypt; dotenv.\n\n"
+            "Data Model: Users (member/captain/coach/admin), Teams (creator, members),\n"
+            "Checklists (items, status per user), READMEs (per team), Notes (encrypted),\n"
+            "AuditLog (actions), JoinRequests (requester->team creator).\n\n"
+            "Config: DATABASE_URL via .env or Settings (Login page).\n"
+            "Backend: MySQL 8 via Docker on Ubuntu; port 3306; user cp_user.\n\n"
+            "Auth: PasswordManager (bcrypt); roles gate dashboards.\n\n"
+            "Dashboards:\n"
+            "- Admin: Team management; user approvals; member management (delete/change role); audit log.\n"
+            "- Coach: My teams; team members; join requests; activity log; create team auto-adds coach.\n"
+            "- Captain: Checklists/READMEs/Notes; Team Members (approve competitors); Join Requests.\n"
+            "- Member/Competitor: Checklists/READMEs/Notes; Join Requests.\n\n"
+            "Key Flows:\n"
+            "- Settings: Set backend DB (host, port, user, pass, db). Saves to .env and re-inits DB.\n"
+            "- Signup: Admin/Coach auto-login; competitors/captains pending approval by coach/captain.\n"
+            "- Approvals: Admin/Coach/Captain can approve via respective tabs; repositories handle updates.\n"
+            "- Team creation: TeamRepository.create_team assigns creating coach to team, approves.\n\n"
+            "Repositories: app/database/repositories.py exposes CRUD for Users, Teams, Checklists, READMEs, Notes,\n"
+            "Audit logs, Join requests. Use get_session() for transactions; methods commit/rollback.\n\n"
+            "Migrations: Alembic uses DATABASE_URL; run `alembic upgrade head`.\n"
+            "Docs: See docs/backend-ubuntu.md for Docker setup; README quick-start included.\n\n"
+            "To recreate via AI: Request a PySide6 multi-dashboard app with SQLAlchemy models above,\n"
+            "repositories pattern, Alembic migration, and a Settings dialog to set DATABASE_URL;\n"
+            "dashboards per role with tab layouts and table actions described; include bcrypt auth and audit logging.\n"
+        )

@@ -100,8 +100,10 @@ class MemberDashboard(QMainWindow):
         widget = QWidget()
         layout = QtQVBoxLayout()
         table = QTableWidget()
-        table.setColumnCount(3)
-        table.setHorizontalHeaderLabels(["Name", "Email", "Role"])
+        # Captains can take actions; add Approve/Reject columns
+        is_captain = self.user["role"].lower() == "captain"
+        table.setColumnCount(5 if is_captain else 3)
+        table.setHorizontalHeaderLabels(["Name", "Email", "Role"] + (["Approve", "Reject"] if is_captain else []))
         members = []
         try:
             from app.database.repositories import UserRepository, TeamRepository
@@ -130,6 +132,15 @@ class MemberDashboard(QMainWindow):
             table.setItem(row, 0, QTableWidgetItem(member.name))
             table.setItem(row, 1, QTableWidgetItem(member.email))
             table.setItem(row, 2, QTableWidgetItem(str(member.role)))
+            if is_captain and (str(member.role).lower() in ["member", "competitor"]):
+                approve_btn = QPushButton("Approve")
+                reject_btn = QPushButton("Reject")
+                approve_btn.setEnabled(not member.is_approved)
+                reject_btn.setEnabled(True)
+                approve_btn.clicked.connect(lambda checked, uid=member.id: self._approve_user(uid))
+                reject_btn.clicked.connect(lambda checked, uid=member.id: self._reject_user(uid))
+                table.setCellWidget(row, 3, approve_btn)
+                table.setCellWidget(row, 4, reject_btn)
         layout.addWidget(table)
         widget.setLayout(layout)
         return widget
