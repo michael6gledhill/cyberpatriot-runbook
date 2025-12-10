@@ -734,6 +734,11 @@ class TeamJoinRequestRepository:
         try:
             request = session.query(TeamJoinRequest).filter(TeamJoinRequest.id == request_id).first()
             if request:
+                # Update requester to be part of the team and approved
+                user = session.query(User).filter(User.id == request.requester_user_id).first()
+                if user:
+                    user.team_id = request.team_id
+                    user.is_approved = True
                 request.status = JoinRequestStatus.APPROVED
                 session.commit()
                 return True

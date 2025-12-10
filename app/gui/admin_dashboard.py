@@ -272,22 +272,25 @@ class AdminDashboard(QMainWindow):
             from app.database.repositories import TeamJoinRequestRepository, UserRepository, TeamRepository
             # Get all pending join requests
             pending_requests = TeamJoinRequestRepository.get_all_pending_requests() if hasattr(TeamJoinRequestRepository, 'get_all_pending_requests') else []
-            # Get all unapproved users (including coaches)
+            # Get all unapproved users (admins & coaches for admin approval panel)
             unapproved_users = UserRepository.get_pending_users()
-            # Combine: show join requests and unapproved users who are not competitors/captains (e.g., coaches)
+            # Combine: show coach join requests and unapproved users (admins & coaches)
             rows = []
-            # Add join requests (competitors/captains)
+            # Add coach join requests only
             for req in pending_requests:
                 user = req.requester if hasattr(req, 'requester') and req.requester else UserRepository.get_user_by_id(req.requester_user_id)
                 team = req.team if hasattr(req, 'team') and req.team else TeamRepository.get_team_by_id(req.team_id)
+                # Only include coach requests here
+                if not user or getattr(user, 'role', '').lower() != 'coach':
+                    continue
                 role_display = user.role.capitalize() if user and hasattr(user, 'role') else "N/A"
                 team_name = team.name if team else "N/A"
                 applied_date = getattr(req, 'created_at', None)
                 applied_str = applied_date.strftime("%Y-%m-%d") if applied_date else "N/A"
                 rows.append((user, role_display, team_name, applied_str, req.id, True))
-            # Add unapproved users who are not competitors/captains (e.g., coaches, mentors)
+            # Add unapproved users who are admins or coaches
             for user in unapproved_users:
-                if user.role in ["coach", "mentor"]:
+                if getattr(user, 'role', '').lower() in ["coach", "admin"]:
                     team_name = user.team.name if user.team else "N/A"
                     applied_str = user.created_at.strftime("%Y-%m-%d") if hasattr(user, "created_at") and user.created_at else "N/A"
                     rows.append((user, user.role.capitalize(), team_name, applied_str, user.id, False))

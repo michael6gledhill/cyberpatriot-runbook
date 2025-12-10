@@ -13,3 +13,4 @@ nav:
   - Dashboards: dashboards.md
   - Security Notes: security.md
   - Troubleshooting: troubleshooting.md
+  - Raspberry Pi Setup: pi-setup.md

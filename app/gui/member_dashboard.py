@@ -127,34 +127,44 @@ class MemberDashboard(QMainWindow):
         table = QTableWidget()
         table.setColumnCount(5)
         table.setHorizontalHeaderLabels(["Name", "Email", "Role", "Approve", "Reject"])
-        requests = []
+        rows = []
         try:
-            user = UserRepository.get_user_by_id(self.user["id"])
-            if user and user.team_id:
-                from app.database.repositories import TeamJoinRequestRepository, UserRepository
-                requests = TeamJoinRequestRepository.get_pending_requests_for_team(user.team_id)
-        except Exception as e:
+            current_user = UserRepository.get_user_by_id(self.user["id"])
+            if current_user and current_user.team_id:
+                from app.database.repositories import TeamJoinRequestRepository, UserRepository, TeamRepository
+                # Join requests targeting this team
+                requests = TeamJoinRequestRepository.get_pending_requests_for_team(current_user.team_id)
+                for req in requests:
+                    requester = UserRepository.get_user_by_id(req.requester_user_id)
+                    if not requester:
+                        continue
+                    # Captains: only see competitors
+                    if self.user["role"].lower() == "captain" and requester.role not in ["member", "competitor"]:
+                        continue
+                    rows.append((requester, req.id, True))
+                # Also include pending team members without a request (competitors)
+                team = TeamRepository.get_team_by_id(current_user.team_id)
+                for m in (team.members or []):
+                    if not m.is_approved and (m.role in ["member", "competitor"]):
+                        # skip if they already have a join request
+                        has_req = any(r.requester_user_id == m.id for r in requests)
+                        if not has_req:
+                            rows.append((m, m.id, False))
+        except Exception:
             pass
-        table.setRowCount(len(requests))
-        for row, req in enumerate(requests):
-            # Only allow captain to approve competitors (not other captains/coaches)
-            requester = None
-            try:
-                requester = UserRepository.get_user_by_id(req.requester_user_id)
-            except Exception:
-                pass
-            if not requester:
-                continue
-            # Only show requests for roles below captain
-            if self.user["role"] == "captain" and requester.role not in ["member", "competitor"]:
-                continue
+        table.setRowCount(len(rows))
+        for row, (requester, obj_id, is_join_request) in enumerate(rows):
             table.setItem(row, 0, QTableWidgetItem(requester.name))
             table.setItem(row, 1, QTableWidgetItem(requester.email))
             table.setItem(row, 2, QTableWidgetItem(str(requester.role)))
             approve_btn = QPushButton("Approve")
             reject_btn = QPushButton("Reject")
-            approve_btn.clicked.connect(lambda checked, rid=req.id: self._approve_join_request(rid))
-            reject_btn.clicked.connect(lambda checked, rid=req.id: self._reject_join_request(rid))
+            if is_join_request:
+                approve_btn.clicked.connect(lambda checked, rid=obj_id: self._approve_join_request(rid))
+                reject_btn.clicked.connect(lambda checked, rid=obj_id: self._reject_join_request(rid))
+            else:
+                approve_btn.clicked.connect(lambda checked, uid=obj_id: self._approve_user(uid))
+                reject_btn.clicked.connect(lambda checked, uid=obj_id: self._reject_user(uid))
             table.setCellWidget(row, 3, approve_btn)
             table.setCellWidget(row, 4, reject_btn)
         layout.addWidget(table)
@@ -166,6 +176,18 @@ class MemberDashboard(QMainWindow):
         TeamJoinRequestRepository.approve_request(request_id)
         QMessageBox.information(self, "Success", "Request approved.")
         # Refresh the team members and join requests tabs
+        self._refresh_tabs()
+
+    def _approve_user(self, user_id: int):
+        from app.database.repositories import UserRepository
+        UserRepository.approve_user(user_id)
+        QMessageBox.information(self, "Success", "Member approved.")
+        self._refresh_tabs()
+
+    def _reject_user(self, user_id: int):
+        from app.database.repositories import UserRepository
+        UserRepository.reject_user(user_id)
+        QMessageBox.information(self, "Success", "Member rejected.")
         self._refresh_tabs()
 
     def _reject_join_request(self, request_id):
