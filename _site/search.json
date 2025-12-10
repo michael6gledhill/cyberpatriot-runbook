@@ -1,0 +1,128 @@
+[
+  {
+    "objectID": "quarto/usage.html",
+    "href": "quarto/usage.html",
+    "title": "Usage Guide",
+    "section": "",
+    "text": "Login tab: email + password\nSettings button: set Host/IP, Port, Username, Password, Database; tests and saves to .env"
+  },
+  {
+    "objectID": "quarto/usage.html#login-settings",
+    "href": "quarto/usage.html#login-settings",
+    "title": "Usage Guide",
+    "section": "",
+    "text": "Login tab: email + password\nSettings button: set Host/IP, Port, Username, Password, Database; tests and saves to .env"
+  },
+  {
+    "objectID": "quarto/usage.html#sign-up",
+    "href": "quarto/usage.html#sign-up",
+    "title": "Usage Guide",
+    "section": "Sign Up",
+    "text": "Sign Up\n\nRoles: Admin, Coach, Captain, Mentor, Competitor\nCaptain requires existing Team ID\nAdmin/Coach auto-login; others require approval"
+  },
+  {
+    "objectID": "quarto/usage.html#dashboards",
+    "href": "quarto/usage.html#dashboards",
+    "title": "Usage Guide",
+    "section": "Dashboards",
+    "text": "Dashboards\n\nAdmin: Manage teams, approve/reject users, change roles, delete users, view audit log.\nCoach: Create/join teams, view members, approve join requests, activity log.\nCaptain: Checklists, READMEs, Notes; Team Members with Approve/Reject for competitors; Join Requests (pending badge).\nMember/Competitor: Checklists, READMEs, Notes; Join Requests."
+  },
+  {
+    "objectID": "quarto/usage.html#workflow",
+    "href": "quarto/usage.html#workflow",
+    "title": "Usage Guide",
+    "section": "Workflow",
+    "text": "Workflow\n\nTeam creation by coach auto-assigns coach\nApprovals propagate via repositories\nAlembic migrations keep schema updated"
+  },
+  {
+    "objectID": "quarto/installation.html",
+    "href": "quarto/installation.html",
+    "title": "Installation",
+    "section": "",
+    "text": "Install Docker Engine:\n\nsudo apt update\nsudo apt install -y ca-certificates curl\nsudo install -m 0755 -d /etc/apt/keyrings\ncurl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg\necho \"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release; echo $VERSION_CODENAME) stable\" | sudo tee /etc/apt/sources.list.d/docker.list &gt; /dev/null\nsudo apt update\nsudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin\n\nStart MySQL:\n\nmkdir -p ~/cyberpatriot-backend && cd ~/cyberpatriot-backend\ncat &gt; docker-compose.yml &lt;&lt; 'YML'\nservices:\n  db:\n    image: mysql:8.0\n    restart: unless-stopped\n    environment:\n      MYSQL_DATABASE: cyberpatriot_runbook\n      MYSQL_USER: cp_user\n      MYSQL_PASSWORD: your-strong-password\n      MYSQL_ROOT_PASSWORD: your-strong-root-password\n    ports:\n      - \"3306:3306\"\n    command: [\"--character-set-server=utf8mb4\", \"--collation-server=utf8mb4_0900_ai_ci\"]\n    volumes:\n      - db_data:/var/lib/mysql\nvolumes:\n  db_data:\nYML\n\ndocker compose up -d"
+  },
+  {
+    "objectID": "quarto/installation.html#backend-ubuntu-docker",
+    "href": "quarto/installation.html#backend-ubuntu-docker",
+    "title": "Installation",
+    "section": "",
+    "text": "Install Docker Engine:\n\nsudo apt update\nsudo apt install -y ca-certificates curl\nsudo install -m 0755 -d /etc/apt/keyrings\ncurl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg\necho \"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release; echo $VERSION_CODENAME) stable\" | sudo tee /etc/apt/sources.list.d/docker.list &gt; /dev/null\nsudo apt update\nsudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin\n\nStart MySQL:\n\nmkdir -p ~/cyberpatriot-backend && cd ~/cyberpatriot-backend\ncat &gt; docker-compose.yml &lt;&lt; 'YML'\nservices:\n  db:\n    image: mysql:8.0\n    restart: unless-stopped\n    environment:\n      MYSQL_DATABASE: cyberpatriot_runbook\n      MYSQL_USER: cp_user\n      MYSQL_PASSWORD: your-strong-password\n      MYSQL_ROOT_PASSWORD: your-strong-root-password\n    ports:\n      - \"3306:3306\"\n    command: [\"--character-set-server=utf8mb4\", \"--collation-server=utf8mb4_0900_ai_ci\"]\n    volumes:\n      - db_data:/var/lib/mysql\nvolumes:\n  db_data:\nYML\n\ndocker compose up -d"
+  },
+  {
+    "objectID": "quarto/installation.html#frontend-windowsmacoslinux",
+    "href": "quarto/installation.html#frontend-windowsmacoslinux",
+    "title": "Installation",
+    "section": "Frontend (Windows/macOS/Linux)",
+    "text": "Frontend (Windows/macOS/Linux)\ngit clone https://github.com/michael6gledhill/cyberpatriot-runbook.git\ncd cyberpatriot-runbook\npip install -r requirements.txt\nset DATABASE_URL=mysql+pymysql://cp_user:your-strong-password@SERVER_IP:3306/cyberpatriot_runbook\nalembic upgrade head\npython main.py\nTips: - Use .env to persist DATABASE_URL. - Escape special cmd characters: ^&, ^|; avoid ! or set via .env."
+  },
+  {
+    "objectID": "quarto/features.html",
+    "href": "quarto/features.html",
+    "title": "Features",
+    "section": "",
+    "text": "Create by Coach/Captain; items include name, description, steps\nItem status: pending/completed/skipped; notes per user"
+  },
+  {
+    "objectID": "quarto/features.html#checklists",
+    "href": "quarto/features.html#checklists",
+    "title": "Features",
+    "section": "",
+    "text": "Create by Coach/Captain; items include name, description, steps\nItem status: pending/completed/skipped; notes per user"
+  },
+  {
+    "objectID": "quarto/features.html#readmes",
+    "href": "quarto/features.html#readmes",
+    "title": "Features",
+    "section": "READMEs",
+    "text": "READMEs\n\nTeam documentation; upload/view; author attribution"
+  },
+  {
+    "objectID": "quarto/features.html#notes",
+    "href": "quarto/features.html#notes",
+    "title": "Features",
+    "section": "Notes",
+    "text": "Notes\n\nPersonal notes per user; optional encryption"
+  },
+  {
+    "objectID": "quarto/features.html#join-requests-approvals",
+    "href": "quarto/features.html#join-requests-approvals",
+    "title": "Features",
+    "section": "Join Requests & Approvals",
+    "text": "Join Requests & Approvals\n\nTeamJoinRequest workflow for joining teams\nAdmin/Coach/Captain approvals per role"
+  },
+  {
+    "objectID": "quarto/features.html#audit-log",
+    "href": "quarto/features.html#audit-log",
+    "title": "Features",
+    "section": "Audit Log",
+    "text": "Audit Log\n\nTrack actions: approve/reject/change role/delete/readme/note updates"
+  },
+  {
+    "objectID": "quarto/index.html",
+    "href": "quarto/index.html",
+    "title": "CyberPatriot Runbook",
+    "section": "",
+    "text": "Welcome to the CyberPatriot Runbook documentation.\n\nDesktop GUI built with PySide6\nMySQL backend via SQLAlchemy + Alembic\nRole-based dashboards: Admin, Coach, Captain, Competitor, Mentor\n\nQuick links: - Installation: {{&lt; link \"installation.qmd\" &gt;}} - Usage Guide: {{&lt; link \"usage.qmd\" &gt;}} - Feature Overview: {{&lt; link \"features.qmd\" &gt;}} - Database Schema: {{&lt; link \"schema.qmd\" &gt;}}\nRepository: https://github.com/michael6gledhill/cyberpatriot-runbook\nPublishing: - Install Quarto: https://quarto.org/docs/get-started/ - Render locally: quarto render - Preview: quarto preview - GitHub Pages: enable Pages with source set to gh-pages or use Actions."
+  },
+  {
+    "objectID": "quarto/schema.html",
+    "href": "quarto/schema.html",
+    "title": "Database Schema",
+    "section": "",
+    "text": "Users: id, name, email, password_hash, role, team_id, is_approved, is_active, timestamps\nTeams: id, name, team_id, division, created_by_user_id, timestamps\nChecklists, ChecklistItems, ChecklistStatus\nREADMEs: team_id, author_user_id, title, os_type, content\nNotes: team_id, author_user_id, title, note_type, content\nAuditLogs\nTeamJoinRequests: team_id, requester_user_id, team_creator_user_id, status, message"
+  },
+  {
+    "objectID": "quarto/schema.html#entities",
+    "href": "quarto/schema.html#entities",
+    "title": "Database Schema",
+    "section": "",
+    "text": "Users: id, name, email, password_hash, role, team_id, is_approved, is_active, timestamps\nTeams: id, name, team_id, division, created_by_user_id, timestamps\nChecklists, ChecklistItems, ChecklistStatus\nREADMEs: team_id, author_user_id, title, os_type, content\nNotes: team_id, author_user_id, title, note_type, content\nAuditLogs\nTeamJoinRequests: team_id, requester_user_id, team_creator_user_id, status, message"
+  },
+  {
+    "objectID": "quarto/schema.html#relationships",
+    "href": "quarto/schema.html#relationships",
+    "title": "Database Schema",
+    "section": "Relationships",
+    "text": "Relationships\n\nTeam has many Users (members); User belongs to Team\nTeam has many READMEs and Notes\nChecklistStatus links User to ChecklistItem\nJoinRequests link requester to team creator and team"
+  }
+]
