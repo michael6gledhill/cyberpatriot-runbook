@@ -60,10 +60,28 @@ Run the App
 python main.py
 ```
 
-Raspberry Pi Notes
-- Install the same `requirements.txt`
-- Ensure MySQL is accessible (local or remote)
-- Use the same `DATABASE_URL` and run `alembic upgrade head` before launching
+Backend on Ubuntu (Docker)
+- Run MySQL via Docker Compose on Ubuntu Server
+- Persist data via Docker volume; expose port 3306 to LAN
+
+Quick start on Ubuntu Server:
+```bash
+sudo apt update
+sudo apt install -y docker.io
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER
+# Log out/in, then in repo root:
+docker compose up -d
+```
+
+Local frontend configuration (Windows `cmd.exe`):
+```bat
+set DATABASE_URL=mysql+pymysql://cp_user:your-strong-password@<SERVER_IP>:3306/cyberpatriot_runbook
+alembic upgrade head
+python main.py
+```
+
+See `docs/pi-setup.md` for the complete Ubuntu backend guide.
 
 Documentation
 - Full documentation (with screenshots and guides) is published at:

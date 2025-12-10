@@ -1,60 +1,51 @@
-# Raspberry Pi (CasaOS) Backend Setup
+# Ubuntu Server Backend Setup (Docker)
 
-This guide focuses on running only the backend (MySQL database) on a Raspberry Pi running CasaOS. The application frontend (PySide6 desktop client) runs on your local computer(s) and connects to the Pi-hosted database over the network.
+This guide sets up the backend (MySQL) on an Ubuntu Server using Docker. The frontend (PySide6 desktop client) runs on your local computer(s) and connects to the Ubuntu-hosted database over the network.
 
 > View the source on GitHub: https://github.com/michael6gledhill/cyberpatriot-runbook
 
 ## What Runs Where
-- Raspberry Pi: MySQL server (database backend)
+- Ubuntu Server: MySQL server (database backend) via Docker Compose
 - Local computers: CyberPatriot Runbook desktop app (frontend) and Alembic migrations
 
 ## Prerequisites
-- Raspberry Pi (64-bit OS recommended) with CasaOS installed
+- Ubuntu Server with Docker and Docker Compose installed
 - Internet connectivity and shell access
 - Local computer(s) with Python installed to run the GUI
 
-## 1. Install and Configure MySQL on the Pi
-Update APT and install MySQL server:
-
+Install Docker & Compose:
 ```bash
 sudo apt update
-sudo apt install -y mysql-server
+sudo apt install -y docker.io
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER
+# Log out/in to apply group membership
+```
+Compose v2 is bundled with recent Docker; if needed:
+```bash
+sudo apt install -y docker-compose-plugin
 ```
 
-Secure and start MySQL:
+## 1. Start MySQL Backend with Docker
+On the Ubuntu server, place `docker-compose.yml` in a directory, then run:
 
 ```bash
-sudo systemctl enable mysql
-sudo systemctl start mysql
-sudo mysql_secure_installation
+docker compose up -d
 ```
 
-## 2. Create Database and User on the Pi
-Log in to MySQL and create the database and a dedicated user.
+Environment defaults in `docker-compose.yml`:
+- `MYSQL_DATABASE=cyberpatriot_runbook`
+- `MYSQL_USER=cp_user`
+- `MYSQL_PASSWORD=your-strong-password`
+- `MYSQL_ROOT_PASSWORD=change-this-root-password`
 
+To change credentials, edit `docker-compose.yml` and restart:
 ```bash
-mysql -u root -p
-```
-Inside MySQL shell:
-```sql
-CREATE DATABASE cyberpatriot_runbook CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'cp_user'@'localhost' IDENTIFIED BY 'your-strong-password';
-GRANT ALL PRIVILEGES ON cyberpatriot_runbook.* TO 'cp_user'@'localhost';
-FLUSH PRIVILEGES;
+docker compose down
+docker compose up -d
 ```
 
-If you plan to connect from other machines, grant to `%` and ensure MySQL listens on all interfaces:
-```sql
-CREATE USER 'cp_user'@'%' IDENTIFIED BY 'your-strong-password';
-GRANT ALL PRIVILEGES ON cyberpatriot_runbook.* TO 'cp_user'@'%';
-FLUSH PRIVILEGES;
-```
-
-Enable remote connections:
-- Edit `/etc/mysql/mysql.conf.d/mysqld.cnf` and set `bind-address = 0.0.0.0`
-- Restart MySQL: `sudo systemctl restart mysql`
-
-## 3. Run Alembic Migrations from a Local Computer
+## 2. Run Alembic Migrations from a Local Computer
 On your local computer (not on the Pi), clone the repository and configure the `DATABASE_URL` to point to the Pi.
 
 ```bash
@@ -66,7 +57,7 @@ pip install -r requirements.txt
 Set `DATABASE_URL` (replace `<PI_IP>`):
 
 ```bash
-set DATABASE_URL=mysql+pymysql://cp_user:your-strong-password@<PI_IP>:3306/cyberpatriot_runbook
+set DATABASE_URL=mysql+pymysql://cp_user:your-strong-password@<SERVER_IP>:3306/cyberpatriot_runbook
 ```
 
 Run migrations:
@@ -75,18 +66,18 @@ Run migrations:
 alembic upgrade head
 ```
 
-## 4. Run the Frontend on Local Computers
+## 3. Run the Frontend on Local Computers
 On any local computer that will use the app:
 
 ```bash
 git clone https://github.com/michael6gledhill/cyberpatriot-runbook.git
 cd cyberpatriot-runbook
 pip install -r requirements.txt
-set DATABASE_URL=mysql+pymysql://cp_user:your-strong-password@<PI_IP>:3306/cyberpatriot_runbook
+set DATABASE_URL=mysql+pymysql://cp_user:your-strong-password@<SERVER_IP>:3306/cyberpatriot_runbook
 python main.py
 ```
 
-## 5. Optional: Configure `DATABASE_URL` on the Pi for Admin Tasks
+## 4. Optional: Configure `DATABASE_URL` on the Server for Admin Tasks
 If you prefer to run Alembic from the Pi instead, set `DATABASE_URL` there:
 
 ```bash
@@ -94,12 +85,12 @@ echo 'DATABASE_URL=mysql+pymysql://cp_user:your-strong-password@localhost:3306/c
 ```
 Log out/in or `source /etc/environment` to apply.
 
-## 6. Network and Security Notes
+## 5. Network and Security Notes
 - Restrict MySQL access to your LAN/subnets as needed.
 - Consider firewall rules allowing TCP 3306 only from trusted hosts.
 - Use strong passwords and rotate credentials periodically.
 
-## 7. Verify Connectivity from Local Computers
+## 6. Verify Connectivity from Local Computers
 From your local computer, test connectivity:
 
 ```bash
@@ -107,16 +98,21 @@ mysql -h <PI_IP> -u cp_user -p
 ```
 If successful, the GUI will operate normally against the Pi-hosted database.
 
-## 8. CasaOS Considerations
-- CasaOS may manage services via containers; this guide uses host-installed MySQL.
-- For containerization later, expose port 3306 and use the same `DATABASE_URL`.
+## 7. Docker Notes
+- The compose file exposes `3306:3306` for MySQL access.
+- Data is persisted in the `db_data` Docker volume.
+- To stop/start:
+```bash
+docker compose down
+docker compose up -d
+```
 
-## 9. Frontend Deployment Tips
+## 8. Frontend Deployment Tips
 - Distribute the desktop app by cloning the repo on each local machine.
 - Configure `DATABASE_URL` to point to the Pi’s IP.
 - Keep clients updated via `git pull` when you make changes.
 
-## 10. Troubleshooting
+## 9. Troubleshooting
 - Access denied:
   - Verify `cp_user` credentials and privileges.
   - Test: `mysql -h localhost -u cp_user -p`
@@ -126,7 +122,7 @@ If successful, the GUI will operate normally against the Pi-hosted database.
 - PySide6 display issues:
   - Run the app on a local desktop; the Pi should only host MySQL.
 
-## 11. Next Steps
+## 10. Next Steps
 - On a local computer, run the desktop app and create an admin account.
 - Configure teams and begin approvals; data persists on the Pi MySQL.
 
