@@ -8,13 +8,11 @@
       
       
       
-        <link rel="canonical" href="https://michael6gledhill.github.io/cyberpatriot-runbook/dashboards/">
+        <link rel="canonical" href="https://michael6gledhill.github.io/cyberpatriot-runbook/pi-setup/">
       
       
-        <link rel="prev" href="../teams/">
+        <link rel="prev" href="../troubleshooting/">
       
-      
-        <link rel="next" href="../security/">
       
       
         
@@ -25,7 +23,7 @@
     
     
       
-        <title>Dashboards - CyberPatriot Runbook Docs</title>
+        <title>Raspberry Pi Setup - CyberPatriot Runbook Docs</title>
       
     
     
@@ -66,7 +64,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#dashboards" class="md-skip">
+        <a href="#raspberry-pi-casaos-backend-setup" class="md-skip">
           Skip to content
         </a>
       
@@ -102,7 +100,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Dashboards
+              Raspberry Pi Setup
             
           </span>
         </div>
@@ -357,37 +355,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Dashboards
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../dashboards/" class="md-nav__link">
         
   
   
@@ -403,59 +374,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#admin-dashboard" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Admin Dashboard
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#coach-dashboard" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Coach Dashboard
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#member-dashboard" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Member Dashboard
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -518,10 +436,37 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../pi-setup/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Raspberry Pi Setup
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -537,6 +482,169 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-update-system-and-install-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Update System and Install Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-get-the-application-source-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Get the Application Source Code
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-install-python-requirements-system-wide" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Install Python Requirements (System-wide)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-prepare-mysql-database" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Prepare MySQL Database
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-configure-the-database-url" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Configure the Database URL
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-initialize-the-database-schema-alembic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Initialize the Database Schema (Alembic)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-run-the-application-gui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Run the Application (GUI)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-remote-database-access-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Remote Database Access (Optional)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-casaos-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. CasaOS Considerations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Troubleshooting
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documentation
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -568,10 +676,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#admin-dashboard" class="md-nav__link">
+  <a href="#prerequisites" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Admin Dashboard
+        Prerequisites
       
     </span>
   </a>
@@ -579,10 +687,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#coach-dashboard" class="md-nav__link">
+  <a href="#1-update-system-and-install-dependencies" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Coach Dashboard
+        1. Update System and Install Dependencies
       
     </span>
   </a>
@@ -590,10 +698,120 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#member-dashboard" class="md-nav__link">
+  <a href="#2-get-the-application-source-code" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Member Dashboard
+        2. Get the Application Source Code
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-install-python-requirements-system-wide" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Install Python Requirements (System-wide)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-prepare-mysql-database" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Prepare MySQL Database
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-configure-the-database-url" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Configure the Database URL
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-initialize-the-database-schema-alembic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Initialize the Database Schema (Alembic)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-run-the-application-gui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Run the Application (GUI)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-remote-database-access-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Remote Database Access (Optional)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-casaos-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. CasaOS Considerations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Troubleshooting
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documentation
       
     </span>
   </a>
@@ -617,26 +835,129 @@
 
 
 
-<h1 id="dashboards">Dashboards</h1>
-<h2 id="admin-dashboard">Admin Dashboard</h2>
+<h1 id="raspberry-pi-casaos-backend-setup">Raspberry Pi (CasaOS) Backend Setup</h1>
+<p>This guide walks through installing and configuring the CyberPatriot Runbook backend on a Raspberry Pi running CasaOS. These steps avoid Python virtual environments and install system-wide packages.</p>
+<h2 id="prerequisites">Prerequisites</h2>
 <ul>
-<li>Team Management: create/edit/delete teams, view members.</li>
-<li>User Approvals: approve/reject pending users.</li>
-<li>Member Management: view members, change roles (where implemented).</li>
-<li>Activity Log: shows recent audit entries.</li>
+<li>Raspberry Pi (64-bit OS recommended) with CasaOS installed</li>
+<li>MySQL server installed and running (local or remote)</li>
+<li>A MySQL user/password and the database name you will use (e.g., <code>cyberpatriot_runbook</code>)</li>
+<li>Internet connectivity and basic shell access</li>
 </ul>
-<h2 id="coach-dashboard">Coach Dashboard</h2>
+<h2 id="1-update-system-and-install-dependencies">1. Update System and Install Dependencies</h2>
+<p>Update APT and install required packages and Python dependencies:</p>
+<pre><code class="language-bash">sudo apt update
+sudo apt install -y python3 python3-pip git build-essential libssl-dev libffi-dev
+</code></pre>
+<p>Notes:
+- <code>python3-pip</code> installs pip system-wide (no virtualenv used).
+- <code>build-essential</code> and OpenSSL/ffi headers help compile dependencies if needed.</p>
+<h2 id="2-get-the-application-source-code">2. Get the Application Source Code</h2>
+<p>Clone the repository to your Pi:</p>
+<pre><code class="language-bash">cd ~
+git clone https://github.com/michael6gledhill/cyberpatriot-runbook.git
+cd cyberpatriot-runbook
+</code></pre>
+<p>To update later:</p>
+<pre><code class="language-bash">git pull
+</code></pre>
+<h2 id="3-install-python-requirements-system-wide">3. Install Python Requirements (System-wide)</h2>
+<p>Install dependencies listed in <code>requirements.txt</code>:</p>
+<pre><code class="language-bash">sudo pip3 install --upgrade pip
+sudo pip3 install -r requirements.txt
+</code></pre>
+<p>Packages installed:
+- PySide6 (GUI)
+- SQLAlchemy
+- PyMySQL
+- bcrypt
+- cryptography
+- Alembic
+- python-dotenv</p>
+<h2 id="4-prepare-mysql-database">4. Prepare MySQL Database</h2>
+<p>Log in to MySQL and create the database and a dedicated user. If you already have these, you can skip this step.</p>
+<pre><code class="language-bash">mysql -u root -p
+</code></pre>
+<p>Inside MySQL shell:</p>
+<pre><code class="language-sql">CREATE DATABASE cyberpatriot_runbook CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'cp_user'@'localhost' IDENTIFIED BY 'your-strong-password';
+GRANT ALL PRIVILEGES ON cyberpatriot_runbook.* TO 'cp_user'@'localhost';
+FLUSH PRIVILEGES;
+</code></pre>
+<p>If you plan to connect from another machine, grant to <code>%</code> and ensure MySQL listens on all interfaces:</p>
+<pre><code class="language-sql">CREATE USER 'cp_user'@'%' IDENTIFIED BY 'your-strong-password';
+GRANT ALL PRIVILEGES ON cyberpatriot_runbook.* TO 'cp_user'@'%';
+FLUSH PRIVILEGES;
+</code></pre>
+<h2 id="5-configure-the-database-url">5. Configure the Database URL</h2>
+<p>The application reads the database connection from <code>DATABASE_URL</code>. Set it in your shell or add it to <code>/etc/environment</code> for persistence.</p>
+<p>Example for local MySQL:</p>
+<pre><code class="language-bash">export DATABASE_URL=&quot;mysql+pymysql://cp_user:your-strong-password@localhost:3306/cyberpatriot_runbook&quot;
+</code></pre>
+<p>To persist across reboots, add the line to <code>/etc/environment</code>:</p>
+<pre><code class="language-bash">echo 'DATABASE_URL=mysql+pymysql://cp_user:your-strong-password@localhost:3306/cyberpatriot_runbook' | sudo tee -a /etc/environment
+</code></pre>
+<p>Log out/in or <code>source /etc/environment</code> to apply.</p>
+<p>Alternatively, you can edit <code>config.py</code> and set <code>DATABASE_URL</code> directly.</p>
+<h2 id="6-initialize-the-database-schema-alembic">6. Initialize the Database Schema (Alembic)</h2>
+<p>Run Alembic migrations to create the tables:</p>
+<pre><code class="language-bash">alembic upgrade head
+</code></pre>
+<p>This will create the following tables and relationships:
+- users, teams, team_join_requests
+- checklists, checklist_items, checklist_status
+- readmes, notes (with encryption support)
+- audit_logs</p>
+<h2 id="7-run-the-application-gui">7. Run the Application (GUI)</h2>
+<p>Launch the desktop application from the repository directory:</p>
+<pre><code class="language-bash">python3 main.py
+</code></pre>
+<p>You should see output similar to:</p>
+<pre><code>Initializing database: mysql+pymysql://cp_user:***@localhost:3306/cyberpatriot_runbook
+Database initialized successfully!
+</code></pre>
+<p>The PySide6 window should open if you’re running in a graphical session on the Pi.</p>
+<h2 id="8-remote-database-access-optional">8. Remote Database Access (Optional)</h2>
+<p>If you will run the GUI on another machine but use the Pi’s MySQL:
+- Ensure MySQL listens on <code>0.0.0.0</code>:
+  - Edit <code>/etc/mysql/mysql.conf.d/mysqld.cnf</code>, set <code>bind-address = 0.0.0.0</code>
+  - Restart: <code>sudo systemctl restart mysql</code>
+- Open/allow TCP 3306 in CasaOS/iptables or restrict to your LAN.
+- Set <code>DATABASE_URL</code> on your desktop to point to the Pi IP:</p>
+<pre><code class="language-bash">export DATABASE_URL=&quot;mysql+pymysql://cp_user:your-strong-password@&lt;PI_IP&gt;:3306/cyberpatriot_runbook&quot;
+</code></pre>
+<h2 id="9-casaos-considerations">9. CasaOS Considerations</h2>
 <ul>
-<li>My Teams: create teams, join existing teams, see members.</li>
-<li>Team Members: manage approvals (coach scope).</li>
-<li>Join Requests: approve/reject join requests.</li>
-<li>Activity Log: coach-scoped logs.</li>
+<li>CasaOS often manages services via containers; here we run the app directly on the host.</li>
+<li>Use system packages and environment variables as shown; avoid virtualenvs per your requirement.</li>
+<li>If you containerize later, reuse the same <code>DATABASE_URL</code> and run <code>alembic upgrade head</code> in the container.</li>
 </ul>
-<h2 id="member-dashboard">Member Dashboard</h2>
+<h2 id="10-troubleshooting">10. Troubleshooting</h2>
 <ul>
-<li>Status banner shows team membership/approval state.</li>
-<li>Tabs: Checklists, READMEs, Notes (per user/team where relevant).</li>
+<li>Access denied:</li>
+<li>Verify <code>cp_user</code> credentials and privileges.</li>
+<li>Test: <code>mysql -h localhost -u cp_user -p</code></li>
+<li>Alembic/migration errors:</li>
+<li><code>alembic history</code>, <code>alembic current</code> to inspect.</li>
+<li><code>alembic downgrade -1</code> then <code>upgrade head</code> if needed.</li>
+<li>PySide6 display issues:</li>
+<li>Ensure you’re in a graphical session (not headless).</li>
+<li>On headless, use X forwarding or run the app on a desktop pointing to Pi DB.</li>
 </ul>
+<h2 id="11-next-steps">11. Next Steps</h2>
+<ul>
+<li>Create an admin account and log in to the Admin Dashboard.</li>
+<li>Create teams, approve join requests (admins/coaches), and start using checklists, READMEs, and notes.</li>
+</ul>
+<h2 id="documentation">Documentation</h2>
+<ul>
+<li>Full project documentation: https://michael6gledhill.github.io/cyberpatriot-runbook/</li>
+<li>Local docs preview:</li>
+</ul>
+<pre><code class="language-bash">sudo pip3 install mkdocs mkdocs-material
+mkdocs serve
+</code></pre>
+<p>Open http://127.0.0.1:8000/ in your browser.</p>
 
 
 
