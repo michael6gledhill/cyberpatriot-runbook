@@ -3,6 +3,7 @@
 This is the environment configuration for Alembic migrations.
 """
 
+import os
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
@@ -11,6 +12,11 @@ from alembic import context
 
 # this is the Alembic Config object
 config = context.config
+
+# Prefer DATABASE_URL environment variable when present; fallback to alembic.ini
+env_url = os.getenv("DATABASE_URL")
+if env_url:
+    config.set_main_option("sqlalchemy.url", env_url)
 
 # Interpret the config file for Python logging
 if config.config_file_name is not None:

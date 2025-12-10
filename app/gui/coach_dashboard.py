@@ -305,6 +305,46 @@ class CoachDashboard(QMainWindow):
         except Exception as e:
             QMessageBox.warning(self, "Error", f"Failed to load join requests: {str(e)}")
 
+    def _approve_user_by_id(self, user_id: int):
+        """Approve a pending user by their ID and refresh tables."""
+        try:
+            UserRepository.approve_user(int(user_id))
+            QMessageBox.information(self, "Success", "Member approved!")
+            self._refresh_members_table()
+            self._refresh_join_requests_table()
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Error approving member: {str(e)}")
+
+    def _handle_approve_join_request(self, request_id: int):
+        """Approve a specific join request by ID and refresh table."""
+        try:
+            TeamJoinRequestRepository.approve_request(int(request_id))
+            QMessageBox.information(self, "Success", "Join request approved!")
+            self._refresh_join_requests_table()
+            self._refresh_members_table()
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Error approving request: {str(e)}")
+
+    def _handle_reject_join_request(self, request_id: int):
+        """Reject a specific join request by ID and refresh table."""
+        try:
+            TeamJoinRequestRepository.reject_request(int(request_id))
+            QMessageBox.information(self, "Success", "Join request rejected!")
+            self._refresh_join_requests_table()
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Error rejecting request: {str(e)}")
+
+    def _handle_reject_user(self, user_id: int):
+        """Placeholder for rejecting a pending user. Refresh UI without backend change."""
+        try:
+            # If a repository method exists (e.g., reject_user), call it here.
+            # For now, just inform and refresh to avoid crashes.
+            QMessageBox.information(self, "Info", "Member rejection is not implemented yet.")
+            self._refresh_members_table()
+            self._refresh_join_requests_table()
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Error handling rejection: {str(e)}")
+
     def _open_edit_team(self, team):
         # Placeholder: allow editing name/division locally
         dialog = CreateTeamDialog(self.coach_user["id"], self)
