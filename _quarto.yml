@@ -1,0 +1,31 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "CyberPatriot Runbook"
+  description: "Desktop app docs: installation, usage, features, schema"
+  repo-url: https://github.com/michael6gledhill/cyberpatriot-runbook
+  repo-actions: [issue, edit]
+  navbar:
+    left:
+      - text: Home
+        file: quarto/index.qmd
+      - text: Installation
+        file: quarto/installation.qmd
+      - text: Usage
+        file: quarto/usage.qmd
+      - text: Features
+        file: quarto/features.qmd
+      - text: Database Schema
+        file: quarto/schema.qmd
+  page-footer:
+    left: "© CyberPatriot Runbook"
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    code-copy: true
+    smooth-scroll: true
+    number-sections: false

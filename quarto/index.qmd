@@ -1,0 +1,24 @@
+---
+title: CyberPatriot Runbook
+format: html
+---
+
+Welcome to the CyberPatriot Runbook documentation.
+
+- Desktop GUI built with PySide6
+- MySQL backend via SQLAlchemy + Alembic
+- Role-based dashboards: Admin, Coach, Captain, Competitor, Mentor
+
+Quick links:
+- Installation: {{< link "installation.qmd" >}}
+- Usage Guide: {{< link "usage.qmd" >}}
+- Feature Overview: {{< link "features.qmd" >}}
+- Database Schema: {{< link "schema.qmd" >}}
+
+Repository: https://github.com/michael6gledhill/cyberpatriot-runbook
+
+Publishing:
+- Install Quarto: https://quarto.org/docs/get-started/
+- Render locally: `quarto render`
+- Preview: `quarto preview`
+- GitHub Pages: enable Pages with source set to `gh-pages` or use Actions.

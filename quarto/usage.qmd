@@ -1,0 +1,24 @@
+---
+title: Usage Guide
+format: html
+---
+
+## Login & Settings
+- Login tab: email + password
+- Settings button: set Host/IP, Port, Username, Password, Database; tests and saves to `.env`
+
+## Sign Up
+- Roles: Admin, Coach, Captain, Mentor, Competitor
+- Captain requires existing Team ID
+- Admin/Coach auto-login; others require approval
+
+## Dashboards
+- Admin: Manage teams, approve/reject users, change roles, delete users, view audit log.
+- Coach: Create/join teams, view members, approve join requests, activity log.
+- Captain: Checklists, READMEs, Notes; Team Members with Approve/Reject for competitors; Join Requests (pending badge).
+- Member/Competitor: Checklists, READMEs, Notes; Join Requests.
+
+## Workflow
+- Team creation by coach auto-assigns coach
+- Approvals propagate via repositories
+- Alembic migrations keep schema updated

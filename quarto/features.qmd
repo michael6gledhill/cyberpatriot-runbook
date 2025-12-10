@@ -1,0 +1,21 @@
+---
+title: Features
+format: html
+---
+
+## Checklists
+- Create by Coach/Captain; items include name, description, steps
+- Item status: pending/completed/skipped; notes per user
+
+## READMEs
+- Team documentation; upload/view; author attribution
+
+## Notes
+- Personal notes per user; optional encryption
+
+## Join Requests & Approvals
+- TeamJoinRequest workflow for joining teams
+- Admin/Coach/Captain approvals per role
+
+## Audit Log
+- Track actions: approve/reject/change role/delete/readme/note updates

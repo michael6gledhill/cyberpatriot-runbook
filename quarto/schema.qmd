@@ -1,0 +1,19 @@
+---
+title: Database Schema
+format: html
+---
+
+## Entities
+- Users: id, name, email, password_hash, role, team_id, is_approved, is_active, timestamps
+- Teams: id, name, team_id, division, created_by_user_id, timestamps
+- Checklists, ChecklistItems, ChecklistStatus
+- READMEs: team_id, author_user_id, title, os_type, content
+- Notes: team_id, author_user_id, title, note_type, content
+- AuditLogs
+- TeamJoinRequests: team_id, requester_user_id, team_creator_user_id, status, message
+
+## Relationships
+- Team has many Users (members); User belongs to Team
+- Team has many READMEs and Notes
+- ChecklistStatus links User to ChecklistItem
+- JoinRequests link requester to team creator and team
