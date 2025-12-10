@@ -2,6 +2,8 @@
 
 This guide walks through installing and configuring the CyberPatriot Runbook backend on a Raspberry Pi running CasaOS. These steps avoid Python virtual environments and install system-wide packages.
 
+> View the source on GitHub: https://github.com/michael6gledhill/cyberpatriot-runbook
+
 ## Prerequisites
 - Raspberry Pi (64-bit OS recommended) with CasaOS installed
 - MySQL server installed and running (local or remote)
@@ -148,6 +150,7 @@ export DATABASE_URL="mysql+pymysql://cp_user:your-strong-password@<PI_IP>:3306/c
 
 ## Documentation
 - Full project documentation: https://michael6gledhill.github.io/cyberpatriot-runbook/
+- View the source on GitHub: https://github.com/michael6gledhill/cyberpatriot-runbook
 - Local docs preview:
 ```bash
 sudo pip3 install mkdocs mkdocs-material
