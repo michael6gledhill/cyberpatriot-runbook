@@ -1,60 +1,36 @@
 # Raspberry Pi (CasaOS) Backend Setup
 
-This guide walks through installing and configuring the CyberPatriot Runbook backend on a Raspberry Pi running CasaOS. These steps avoid Python virtual environments and install system-wide packages.
+This guide focuses on running only the backend (MySQL database) on a Raspberry Pi running CasaOS. The application frontend (PySide6 desktop client) runs on your local computer(s) and connects to the Pi-hosted database over the network.
 
 > View the source on GitHub: https://github.com/michael6gledhill/cyberpatriot-runbook
 
+## What Runs Where
+- Raspberry Pi: MySQL server (database backend)
+- Local computers: CyberPatriot Runbook desktop app (frontend) and Alembic migrations
+
 ## Prerequisites
 - Raspberry Pi (64-bit OS recommended) with CasaOS installed
-- MySQL server installed and running (local or remote)
-- A MySQL user/password and the database name you will use (e.g., `cyberpatriot_runbook`)
-- Internet connectivity and basic shell access
+- Internet connectivity and shell access
+- Local computer(s) with Python installed to run the GUI
 
-## 1. Update System and Install Dependencies
-Update APT and install required packages and Python dependencies:
+## 1. Install and Configure MySQL on the Pi
+Update APT and install MySQL server:
 
 ```bash
 sudo apt update
-sudo apt install -y python3 python3-pip git build-essential libssl-dev libffi-dev
+sudo apt install -y mysql-server
 ```
 
-Notes:
-- `python3-pip` installs pip system-wide (no virtualenv used).
-- `build-essential` and OpenSSL/ffi headers help compile dependencies if needed.
-
-## 2. Get the Application Source Code
-Clone the repository to your Pi:
+Secure and start MySQL:
 
 ```bash
-cd ~
-git clone https://github.com/michael6gledhill/cyberpatriot-runbook.git
-cd cyberpatriot-runbook
+sudo systemctl enable mysql
+sudo systemctl start mysql
+sudo mysql_secure_installation
 ```
 
-To update later:
-```bash
-git pull
-```
-
-## 3. Install Python Requirements (System-wide)
-Install dependencies listed in `requirements.txt`:
-
-```bash
-sudo pip3 install --upgrade pip
-sudo pip3 install -r requirements.txt
-```
-
-Packages installed:
-- PySide6 (GUI)
-- SQLAlchemy
-- PyMySQL
-- bcrypt
-- cryptography
-- Alembic
-- python-dotenv
-
-## 4. Prepare MySQL Database
-Log in to MySQL and create the database and a dedicated user. If you already have these, you can skip this step.
+## 2. Create Database and User on the Pi
+Log in to MySQL and create the database and a dedicated user.
 
 ```bash
 mysql -u root -p
@@ -67,71 +43,78 @@ GRANT ALL PRIVILEGES ON cyberpatriot_runbook.* TO 'cp_user'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
-If you plan to connect from another machine, grant to `%` and ensure MySQL listens on all interfaces:
+If you plan to connect from other machines, grant to `%` and ensure MySQL listens on all interfaces:
 ```sql
 CREATE USER 'cp_user'@'%' IDENTIFIED BY 'your-strong-password';
 GRANT ALL PRIVILEGES ON cyberpatriot_runbook.* TO 'cp_user'@'%';
 FLUSH PRIVILEGES;
 ```
 
-## 5. Configure the Database URL
-The application reads the database connection from `DATABASE_URL`. Set it in your shell or add it to `/etc/environment` for persistence.
+Enable remote connections:
+- Edit `/etc/mysql/mysql.conf.d/mysqld.cnf` and set `bind-address = 0.0.0.0`
+- Restart MySQL: `sudo systemctl restart mysql`
 
-Example for local MySQL:
+## 3. Run Alembic Migrations from a Local Computer
+On your local computer (not on the Pi), clone the repository and configure the `DATABASE_URL` to point to the Pi.
+
 ```bash
-export DATABASE_URL="mysql+pymysql://cp_user:your-strong-password@localhost:3306/cyberpatriot_runbook"
+git clone https://github.com/michael6gledhill/cyberpatriot-runbook.git
+cd cyberpatriot-runbook
+pip install -r requirements.txt
 ```
 
-To persist across reboots, add the line to `/etc/environment`:
+Set `DATABASE_URL` (replace `<PI_IP>`):
+
 ```bash
-echo 'DATABASE_URL=mysql+pymysql://cp_user:your-strong-password@localhost:3306/cyberpatriot_runbook' | sudo tee -a /etc/environment
+set DATABASE_URL=mysql+pymysql://cp_user:your-strong-password@<PI_IP>:3306/cyberpatriot_runbook
 ```
-Log out/in or `source /etc/environment` to apply.
 
-Alternatively, you can edit `config.py` and set `DATABASE_URL` directly.
-
-## 6. Initialize the Database Schema (Alembic)
-Run Alembic migrations to create the tables:
+Run migrations:
 
 ```bash
 alembic upgrade head
 ```
 
-This will create the following tables and relationships:
-- users, teams, team_join_requests
-- checklists, checklist_items, checklist_status
-- readmes, notes (with encryption support)
-- audit_logs
-
-## 7. Run the Application (GUI)
-Launch the desktop application from the repository directory:
+## 4. Run the Frontend on Local Computers
+On any local computer that will use the app:
 
 ```bash
-python3 main.py
+git clone https://github.com/michael6gledhill/cyberpatriot-runbook.git
+cd cyberpatriot-runbook
+pip install -r requirements.txt
+set DATABASE_URL=mysql+pymysql://cp_user:your-strong-password@<PI_IP>:3306/cyberpatriot_runbook
+python main.py
 ```
 
-You should see output similar to:
-```
-Initializing database: mysql+pymysql://cp_user:***@localhost:3306/cyberpatriot_runbook
-Database initialized successfully!
-```
-The PySide6 window should open if you’re running in a graphical session on the Pi.
+## 5. Optional: Configure `DATABASE_URL` on the Pi for Admin Tasks
+If you prefer to run Alembic from the Pi instead, set `DATABASE_URL` there:
 
-## 8. Remote Database Access (Optional)
-If you will run the GUI on another machine but use the Pi’s MySQL:
-- Ensure MySQL listens on `0.0.0.0`:
-  - Edit `/etc/mysql/mysql.conf.d/mysqld.cnf`, set `bind-address = 0.0.0.0`
-  - Restart: `sudo systemctl restart mysql`
-- Open/allow TCP 3306 in CasaOS/iptables or restrict to your LAN.
-- Set `DATABASE_URL` on your desktop to point to the Pi IP:
 ```bash
-export DATABASE_URL="mysql+pymysql://cp_user:your-strong-password@<PI_IP>:3306/cyberpatriot_runbook"
+echo 'DATABASE_URL=mysql+pymysql://cp_user:your-strong-password@localhost:3306/cyberpatriot_runbook' | sudo tee -a /etc/environment
 ```
+Log out/in or `source /etc/environment` to apply.
 
-## 9. CasaOS Considerations
-- CasaOS often manages services via containers; here we run the app directly on the host.
-- Use system packages and environment variables as shown; avoid virtualenvs per your requirement.
-- If you containerize later, reuse the same `DATABASE_URL` and run `alembic upgrade head` in the container.
+## 6. Network and Security Notes
+- Restrict MySQL access to your LAN/subnets as needed.
+- Consider firewall rules allowing TCP 3306 only from trusted hosts.
+- Use strong passwords and rotate credentials periodically.
+
+## 7. Verify Connectivity from Local Computers
+From your local computer, test connectivity:
+
+```bash
+mysql -h <PI_IP> -u cp_user -p
+```
+If successful, the GUI will operate normally against the Pi-hosted database.
+
+## 8. CasaOS Considerations
+- CasaOS may manage services via containers; this guide uses host-installed MySQL.
+- For containerization later, expose port 3306 and use the same `DATABASE_URL`.
+
+## 9. Frontend Deployment Tips
+- Distribute the desktop app by cloning the repo on each local machine.
+- Configure `DATABASE_URL` to point to the Pi’s IP.
+- Keep clients updated via `git pull` when you make changes.
 
 ## 10. Troubleshooting
 - Access denied:
@@ -141,12 +124,11 @@ export DATABASE_URL="mysql+pymysql://cp_user:your-strong-password@<PI_IP>:3306/c
   - `alembic history`, `alembic current` to inspect.
   - `alembic downgrade -1` then `upgrade head` if needed.
 - PySide6 display issues:
-  - Ensure you’re in a graphical session (not headless).
-  - On headless, use X forwarding or run the app on a desktop pointing to Pi DB.
+  - Run the app on a local desktop; the Pi should only host MySQL.
 
 ## 11. Next Steps
-- Create an admin account and log in to the Admin Dashboard.
-- Create teams, approve join requests (admins/coaches), and start using checklists, READMEs, and notes.
+- On a local computer, run the desktop app and create an admin account.
+- Configure teams and begin approvals; data persists on the Pi MySQL.
 
 ## Documentation
 - Full project documentation: https://michael6gledhill.github.io/cyberpatriot-runbook/
