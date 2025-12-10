@@ -20,6 +20,9 @@ from PySide6.QtGui import QFont
 from app.database.repositories import UserRepository, TeamRepository
 from app.models.user import UserRole
 from app.security import PasswordManager
+from app.gui.dialogs.settings_dialog import SettingsDialog
+from app.database import init_db
+import os
 
 
 class LoginWindow(QMainWindow):
@@ -42,12 +45,39 @@ class LoginWindow(QMainWindow):
         layout.addWidget(self.tab_widget)
         self.central_widget.setLayout(layout)
 
+        # Top bar with Settings button
+        top_bar = QHBoxLayout()
+        settings_btn = QPushButton("Settings")
+        settings_btn.clicked.connect(self._open_settings)
+        top_bar.addStretch()
+        top_bar.addWidget(settings_btn)
+        layout.addLayout(top_bar)
+
         # Create login and signup tabs
         self.login_tab = self._create_login_tab()
         self.signup_tab = self._create_signup_tab()
 
         self.tab_widget.addTab(self.login_tab, "Login")
         self.tab_widget.addTab(self.signup_tab, "Sign Up")
+
+    def _open_settings(self):
+        """Open settings dialog to configure backend connection."""
+        # Prefill from environment if present
+        current_url = os.getenv("DATABASE_URL", "")
+        dlg = SettingsDialog(self, current_url)
+        if dlg.exec():
+            new_url = dlg.get_database_url()
+            # Persist to .env in repo root
+            try:
+                env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 
+                                        ".env")
+                with open(env_path, "w", encoding="utf-8") as f:
+                    f.write(f"DATABASE_URL={new_url}\n")
+                os.environ["DATABASE_URL"] = new_url
+                init_db(new_url)
+                QMessageBox.information(self, "Settings Saved", "Backend connection updated and saved.")
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Failed to save settings: {str(e)}")
 
     def _create_login_tab(self) -> QWidget:
         """Create the login tab."""
