@@ -64,7 +64,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#cyberpatriot-runbook" class="md-skip">
+        <a href="#cyberpatriot-runbook-documentation" class="md-skip">
           Skip to content
         </a>
       
@@ -205,24 +205,6 @@
         
       
       
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Home
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
       <a href="." class="md-nav__link md-nav__link--active">
         
   
@@ -239,69 +221,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#getting-started" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Getting Started
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#features" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Features
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#contributing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Contributing
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#deployment" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Deployment
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
       
     </li>
   
@@ -543,58 +462,6 @@
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#getting-started" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Getting Started
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#features" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Features
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#contributing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Contributing
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#deployment" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Deployment
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -610,29 +477,32 @@
 
 
 
-<h1 id="cyberpatriot-runbook">CyberPatriot Runbook</h1>
-<p>Welcome to the CyberPatriot Runbook documentation. This site is deployed via GitHub Pages and built with MkDocs.</p>
-<h2 id="getting-started">Getting Started</h2>
-<ul>
-<li>Install dependencies: <code>pip install -r requirements.txt</code></li>
-<li>Run the app: <code>python main.py</code></li>
-<li>Database setup: see <code>database_setup.sql</code> and <code>init_database.py</code></li>
-</ul>
-<h2 id="features">Features</h2>
-<ul>
-<li>User roles: admin, coach, captain, member</li>
-<li>Team creation and join requests</li>
-<li>Dashboards for admin, coach, member</li>
-<li>Audit logging and notes/checklists</li>
-</ul>
-<h2 id="contributing">Contributing</h2>
-<ol>
-<li>Create a branch</li>
-<li>Commit changes</li>
-<li>Open a pull request</li>
-</ol>
-<h2 id="deployment">Deployment</h2>
-<p>The GitHub Actions workflow builds this site and publishes to the <code>gh-pages</code> branch.</p>
+<hr />
+<h1 id="cyberpatriot-runbook-documentation">CyberPatriot Runbook Documentation</h1>
+<p>Professional user and operator guide for the CyberPatriot Runbook desktop application.</p>
+<p>This site covers installation, configuration, role-based workflows, and troubleshooting. The app is a PySide6 desktop client using MySQL with SQLAlchemy and Alembic.</p>
+<p>Quick Start
+- Install Python dependencies: <code>pip install -r requirements.txt</code>
+- Configure <code>DATABASE_URL</code> (MySQL): see Setup
+- Initialize DB schema: <code>alembic upgrade head</code>
+- Launch: <code>python main.py</code></p>
+<p>What You’ll Find Here
+- Overview: architecture, roles, and data flow
+- Setup: environment, database, and migration steps
+- Usage: login/sign-up, dashboards, approvals, and daily tasks
+- Roles: capabilities for Admin, Coach, Captain, Member
+- Teams: creation, join requests, and member lifecycle
+- Dashboards: Admin/Coach/Member features
+- Security: hashing, encryption, and best practices
+- Troubleshooting: common issues and fixes</p>
+<p>Support &amp; Contributions
+- Open an issue or pull request on GitHub
+- Follow conventional commits and include clear reproduction steps for bugs</p>
+<p>Local Docs Preview</p>
+<pre><code class="language-bash">pip install mkdocs mkdocs-material
+mkdocs serve
+</code></pre>
+<p>The documentation will be available at http://127.0.0.1:8000/ while serving.</p>
 
 
 
