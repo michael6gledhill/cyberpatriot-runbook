@@ -8,9 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://michael6gledhill.github.io/cyberpatriot-runbook/backend-ubuntu/">
+        <link rel="canonical" href="https://michael6gledhill.github.io/cyberpatriot-runbook/app-architecture/">
       
       
+        <link rel="prev" href="../overview/">
+      
+      
+        <link rel="next" href="../setup/">
       
       
         
@@ -21,7 +25,7 @@
     
     
       
-        <title>Ubuntu Server Backend (Docker) - CyberPatriot Runbook Docs</title>
+        <title>App Architecture - CyberPatriot Runbook Docs</title>
       
     
     
@@ -62,7 +66,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#ubuntu-server-backend-docker" class="md-skip">
+        <a href="#cyberpatriot-runbook-app-architecture-ai-repro-prompt" class="md-skip">
           Skip to content
         </a>
       
@@ -98,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Ubuntu Server Backend (Docker)
+              App Architecture
             
           </span>
         </div>
@@ -269,10 +273,37 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../app-architecture/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    App Architecture
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -288,6 +319,147 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tech-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tech Stack
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-model-tables-relationships" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Model (tables + relationships)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#repositories-service-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Repositories (service layer)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-db-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration &amp; DB Setup
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gui-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GUI Structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-user-flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key User Flows
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#minimal-files-to-recreate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Minimal Files to Recreate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build &amp; Run
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prompt-for-ai-recreation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prompt for AI Recreation
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -535,10 +707,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-install-docker-engine" class="md-nav__link">
+  <a href="#goals" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1) Install Docker Engine
+        Goals
       
     </span>
   </a>
@@ -546,10 +718,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-start-mysql-with-docker-compose" class="md-nav__link">
+  <a href="#tech-stack" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2) Start MySQL with Docker Compose
+        Tech Stack
       
     </span>
   </a>
@@ -557,10 +729,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-windowsmacos-client-setup" class="md-nav__link">
+  <a href="#data-model-tables-relationships" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3) Windows/macOS client setup
+        Data Model (tables + relationships)
       
     </span>
   </a>
@@ -568,10 +740,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-optional-persist-config-via-env" class="md-nav__link">
+  <a href="#repositories-service-layer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4) Optional: persist config via .env
+        Repositories (service layer)
       
     </span>
   </a>
@@ -579,10 +751,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-firewall-connectivity" class="md-nav__link">
+  <a href="#configuration-db-setup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5) Firewall &amp; connectivity
+        Configuration &amp; DB Setup
       
     </span>
   </a>
@@ -590,10 +762,65 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#troubleshooting" class="md-nav__link">
+  <a href="#gui-structure" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Troubleshooting
+        GUI Structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-user-flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key User Flows
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#minimal-files-to-recreate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Minimal Files to Recreate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build &amp; Run
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prompt-for-ai-recreation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prompt for AI Recreation
       
     </span>
   </a>
@@ -620,90 +847,115 @@
   
 
 
-<h1 id="ubuntu-server-backend-docker">Ubuntu Server Backend (Docker)</h1>
-<p>This guide gets your backend running on Ubuntu Server using Docker in minutes, then connects your Windows/macOS desktop app to it.</p>
-<h2 id="1-install-docker-engine">1) Install Docker Engine</h2>
-<pre><code class="language-bash">sudo apt update
-sudo apt install -y ca-certificates curl
-sudo install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-echo &quot;deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release; echo $VERSION_CODENAME) stable&quot; | sudo tee /etc/apt/sources.list.d/docker.list &gt; /dev/null
-sudo apt update
-sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-</code></pre>
-<p>Verify Docker:</p>
-<pre><code class="language-bash">docker version
-</code></pre>
-<h2 id="2-start-mysql-with-docker-compose">2) Start MySQL with Docker Compose</h2>
-<pre><code class="language-bash">mkdir -p ~/cyberpatriot-backend &amp;&amp; cd ~/cyberpatriot-backend
-cat &gt; docker-compose.yml &lt;&lt; 'YML'
-services:
-  db:
-    image: mysql:8.0
-    restart: unless-stopped
-    environment:
-      MYSQL_DATABASE: cyberpatriot_runbook
-      MYSQL_USER: cp_user
-      MYSQL_PASSWORD: your-strong-password
-      MYSQL_ROOT_PASSWORD: your-strong-root-password
-    ports:
-      - &quot;3306:3306&quot;
-    command: [&quot;--character-set-server=utf8mb4&quot;, &quot;--collation-server=utf8mb4_0900_ai_ci&quot;]
-    volumes:
-      - db_data:/var/lib/mysql
-volumes:
-  db_data:
-YML
-
-docker compose up -d
-</code></pre>
-<p>Note your server IP:</p>
-<pre><code class="language-bash">hostname -I
-</code></pre>
-<h2 id="3-windowsmacos-client-setup">3) Windows/macOS client setup</h2>
-<p>Clone and install dependencies:</p>
-<pre><code class="language-cmd">git clone https://github.com/michael6gledhill/cyberpatriot-runbook.git
-cd cyberpatriot-runbook
+<h1 id="cyberpatriot-runbook-app-architecture-ai-repro-prompt">CyberPatriot Runbook — App Architecture (AI-Repro Prompt)</h1>
+<p>This page concisely documents the entire app so someone (or an AI) can recreate it from scratch. It prioritizes clarity and breadth while staying compact.</p>
+<h2 id="goals">Goals</h2>
+<ul>
+<li>Desktop GUI for CyberPatriot team management: users, teams, approvals, checklists, READMEs, notes.</li>
+<li>MySQL backend with reliable migrations and a simple remote setup (Ubuntu Docker).</li>
+<li>Role-based dashboards: Admin, Coach, Captain, Competitor, Mentor.</li>
+</ul>
+<h2 id="tech-stack">Tech Stack</h2>
+<ul>
+<li>GUI: PySide6</li>
+<li>ORM: SQLAlchemy 2.x</li>
+<li>Migrations: Alembic</li>
+<li>DB Driver: PyMySQL</li>
+<li>Security: bcrypt (passwords), optional cryptography for note encryption</li>
+<li>Config: <code>.env</code> with <code>DATABASE_URL</code> or in-app Settings dialog</li>
+</ul>
+<h2 id="data-model-tables-relationships">Data Model (tables + relationships)</h2>
+<ul>
+<li><code>users</code></li>
+<li>id, name, email (unique), password_hash, role (<code>member|captain|coach|admin</code>), team_id (FK teams.id), is_approved, is_active, created_at, updated_at</li>
+<li>relationships: <code>team</code> (many-to-one Team), <code>created_teams</code> (one-to-many Team), <code>join_requests</code>, <code>audit_logs</code></li>
+<li><code>teams</code></li>
+<li>id, name, team_id (NN-NNNN unique), division, created_by_user_id (FK users.id), created_at, updated_at</li>
+<li>relationships: <code>members</code> (one-to-many User), <code>creator</code> (User), <code>readmes</code>, <code>notes</code></li>
+<li><code>checklists</code>, <code>checklist_items</code>, <code>checklist_status</code></li>
+<li>checklist_items belong to a checklist; checklist_status belongs to (user, checklist_item) with <code>status</code> and <code>notes</code></li>
+<li><code>readmes</code> (team docs): id, team_id, author_user_id, title, os_type, content</li>
+<li><code>notes</code> (optionally encrypted): id, team_id, author_user_id, title, note_type, content</li>
+<li><code>audit_logs</code>: id, user_id, action, resource_type, resource_id, description, created_at</li>
+<li><code>team_join_requests</code>: id, team_id, requester_user_id, team_creator_user_id, status (<code>pending|approved|rejected</code>), message, created_at</li>
+</ul>
+<h2 id="repositories-service-layer">Repositories (service layer)</h2>
+<p>All CRUD and domain operations live in <code>app/database/repositories.py</code> using a global session factory (<code>app/database/__init__.py</code>). Key methods:
+- <code>UserRepository</code>
+  - <code>create_user(name, email, password_hash, team_id, role)</code> → auto-approve admins
+  - <code>get_user_by_email</code>, <code>get_user_by_id</code>, <code>get_all_users</code>, <code>get_pending_users</code>
+  - <code>approve_user(user_id)</code>, <code>reject_user(user_id)</code>, <code>delete_user(user_id)</code> (hard delete), <code>update_user_role(user_id, role)</code>
+- <code>TeamRepository</code>
+  - <code>create_team(name, team_id, division, created_by_user_id)</code> → if creator is coach, auto-assign them to the team and approve
+  - <code>get_team_by_team_id</code>, <code>get_team_by_id</code>, <code>get_all_teams</code>, <code>get_teams_by_creator(creator_id)</code>, <code>update_team</code>, <code>delete_team</code>
+- <code>ChecklistRepository</code> / <code>ReadMeRepository</code> / <code>NoteRepository</code>
+  - CRUD for their respective resources and linking to teams/users
+- <code>AuditLogRepository</code>
+  - <code>log_action(user_id, action, resource_type, resource_id?, description?)</code>
+- <code>TeamJoinRequestRepository</code>
+  - <code>create_request(team_id, requester_user_id, team_creator_user_id, message)</code>
+  - <code>approve_request(id)</code> (sets requester approved and attaches to team)
+  - <code>reject_request(id)</code>
+  - <code>get_pending_requests_for_creator(user_id)</code>, <code>get_pending_requests_for_team(team_id)</code></p>
+<h2 id="configuration-db-setup">Configuration &amp; DB Setup</h2>
+<ul>
+<li><code>.env</code> with <code>DATABASE_URL=mysql+pymysql://cp_user:your-strong-password@SERVER_IP:3306/cyberpatriot_runbook</code></li>
+<li>Alembic prefers environment variable; run <code>alembic upgrade head</code> after setting.</li>
+<li>Ubuntu backend via Docker Compose (see <code>backend-ubuntu.md</code>): single MySQL service with a persistent volume.</li>
+</ul>
+<h2 id="gui-structure">GUI Structure</h2>
+<ul>
+<li><code>MainWindow</code> (QStackedWidget): switches between Login and role dashboards.</li>
+<li><code>LoginWindow</code> (QMainWindow): tabs for Login, Sign Up, Documentation, and a Settings button.</li>
+<li>Settings dialog (<code>app/gui/dialogs/settings_dialog.py</code>): Host/IP, Port, Username, Password, Database → builds <code>DATABASE_URL</code>, tests connection, writes <code>.env</code>, and reinitializes DB.</li>
+<li>Dashboards:</li>
+<li>Admin: team management (create/edit/delete), user approvals, member management (approve/change role/delete), audit log.</li>
+<li>Coach: my teams (create/join), team members, join requests, activity log. Creating a team auto-adds coach to the team.</li>
+<li>Captain: checklists, READMEs, notes; team members (Approve/Reject competitors); join requests with pending count badge.</li>
+<li>Member/Competitor: checklists, READMEs, notes; join requests.</li>
+</ul>
+<h2 id="key-user-flows">Key User Flows</h2>
+<ul>
+<li>Signup:</li>
+<li>Admin/Coach auto-login; others pending approval.</li>
+<li>Captains must provide an existing Team ID (NN-NNNN).</li>
+<li>Approvals:</li>
+<li>Admin can approve/reject/delete any user; sees team association.</li>
+<li>Coach can approve team members and handle join requests to their teams.</li>
+<li>Captain can approve competitors via Team Members and Join Requests.</li>
+<li>Team Creation:</li>
+<li>Coach creating a team is auto-assigned (<code>user.team_id = team.id</code>) and approved.</li>
+<li>Settings:</li>
+<li>From Login, configure backend DB and persist to <code>.env</code>. Connection test required for save.</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li>Passwords hashed with bcrypt; <code>PasswordManager.verify_password</code> on login.</li>
+<li>Optional encryption for notes via a symmetric key.</li>
+<li>Audit logging for admin actions: approve/reject/change role/delete.</li>
+</ul>
+<h2 id="minimal-files-to-recreate">Minimal Files to Recreate</h2>
+<ul>
+<li>Models: <code>app/models/user.py</code>, <code>team.py</code>, <code>checklist.py</code>, <code>readme.py</code>, <code>note.py</code>, <code>audit_log.py</code>, <code>team_join_request.py</code></li>
+<li>DB init: <code>app/database/__init__.py</code></li>
+<li>Repos: <code>app/database/repositories.py</code></li>
+<li>GUI: <code>app/gui/login_window.py</code>, <code>main_window.py</code>, <code>admin_dashboard.py</code>, <code>coach_dashboard.py</code>, <code>member_dashboard.py</code>, <code>competitor_dashboard.py</code>, <code>mentor_dashboard.py</code>, <code>dialogs/settings_dialog.py</code></li>
+<li>Entry: <code>main.py</code> (reads <code>DATABASE_URL</code>, calls <code>init_db</code>, launches <code>MainWindow</code>)</li>
+<li>Migrations: <code>alembic/</code> with <code>env.py</code> preferring env var and versions</li>
+</ul>
+<h2 id="build-run">Build &amp; Run</h2>
+<pre><code class="language-bash"># Install
 pip install -r requirements.txt
+
+# Set DB and migrate
+set DATABASE_URL=mysql+pymysql://cp_user:your-strong-password@SERVER_IP:3306/cyberpatriot_runbook
+alembic upgrade head
+
+# Run
+python main.py
 </code></pre>
-<p>Set your <code>DATABASE_URL</code> (Windows cmd):</p>
-<pre><code class="language-cmd">set DATABASE_URL=mysql+pymysql://cp_user:your-strong-password@SERVER_IP:3306/cyberpatriot_runbook
-</code></pre>
-<ul>
-<li>Replace <code>SERVER_IP</code> with your Ubuntu server IP.</li>
-<li>Escaping: use <code>^</code> before <code>&amp;</code> or <code>|</code> if present in the password; avoid <code>!</code> with delayed expansion.</li>
-</ul>
-<p>Initialize the schema:</p>
-<pre><code class="language-cmd">alembic upgrade head
-</code></pre>
-<p>Run the app:</p>
-<pre><code class="language-cmd">python main.py
-</code></pre>
-<h2 id="4-optional-persist-config-via-env">4) Optional: persist config via .env</h2>
-<p>Create a <code>.env</code> file in the repo root:</p>
-<pre><code>DATABASE_URL=mysql+pymysql://cp_user:your-strong-password@SERVER_IP:3306/cyberpatriot_runbook
-</code></pre>
-<p>The app and Alembic will use this automatically when <code>DATABASE_URL</code> is not set in the environment.</p>
-<h2 id="5-firewall-connectivity">5) Firewall &amp; connectivity</h2>
-<ul>
-<li>Ensure port <code>3306</code> is reachable on your LAN.</li>
-<li>If using UFW:</li>
-</ul>
-<pre><code class="language-bash">sudo ufw allow 3306/tcp
-sudo ufw status
-</code></pre>
-<ul>
-<li>Confirm from Windows:</li>
-</ul>
-<pre><code class="language-powershell">Test-NetConnection -ComputerName SERVER_IP -Port 3306
-</code></pre>
-<h2 id="troubleshooting">Troubleshooting</h2>
-<ul>
-<li>Authentication fails or approvals error: update to latest app and run <code>alembic upgrade head</code> to apply migrations.</li>
-<li>Alembic complains about URL: ensure <code>DATABASE_URL</code> is set in current shell or <code>.env</code> exists.</li>
-<li>Connection refused: check <code>docker compose ps</code> and MySQL logs with <code>docker compose logs -f db</code>.</li>
-<li>Password special characters: prefer <code>.env</code> to avoid cmd escaping issues.</li>
-</ul>
+<h2 id="prompt-for-ai-recreation">Prompt for AI Recreation</h2>
+<p>“Build a PySide6 desktop app ‘CyberPatriot Runbook’ with role-based dashboards (admin/coach/captain/member/competitor/mentor). Use SQLAlchemy 2.x with models and relationships as described, Alembic migrations, and PyMySQL. Implement repositories for Users, Teams, Checklists, READMEs, Notes, AuditLogs, JoinRequests with methods listed. Add a Login window with Sign Up, Settings (to configure <code>DATABASE_URL</code>, test connection, save to <code>.env</code>), and a Documentation tab. Implement Admin dashboard for team/user management with delete/change role and audit logging; Coach dashboard for team creation (auto-assign coach), members, join requests; Captain dashboard with members approval for competitors and join requests with a pending badge; Member/Competitor dashboards for checklists, READMEs, notes. Provide quick-start commands and make configuration via <code>.env</code>.”</p>
 
 
 
