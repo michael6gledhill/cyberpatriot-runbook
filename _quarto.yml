@@ -1,5 +1,37 @@
+  type: website
 project:
   type: website
+  output-dir: _site
+
+website:
+  title: CyberPatriot Runbook Docs
+  navbar:
+    left:
+      - text: Installation
+        href: docs/installation.md
+      - text: Usage
+        href: docs/usage.md
+      - text: Schema
+        href: docs/schema.md
+      - text: Features
+        href: docs/features.md
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    code-copy: true
+    highlight-style: github
+
+metadata:
+  repo-url: https://github.com/michael6gledhill/cyberpatriot-runbook
+  repo-actions: [issue, edit]
+  page-navigation: true
+
+github-pages:
+  # Use GitHub Pages; build is performed via Actions workflow
+  # Ensure Pages source is GitHub Actions / root
+  enabled: true
   output-dir: _site
 
 website:
