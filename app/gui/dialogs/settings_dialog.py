@@ -41,6 +41,13 @@ class SettingsDialog(QDialog):
                 self.dbname.setText(db)
             except Exception:
                 pass
+        else:
+            # Prefill sensible defaults provided by the user
+            self.host.setText("192.168.3.127")
+            self.port.setText("3306")
+            self.user.setText("cp_user")
+            self.password.setText("your-strong-password")
+            self.dbname.setText("cyberpatriot_runbook")
 
         layout = QVBoxLayout()
         for label, widget, placeholder in [

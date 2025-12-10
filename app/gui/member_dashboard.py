@@ -76,8 +76,21 @@ class MemberDashboard(QMainWindow):
 
         # Captains see team members and join requests
         if self.user["role"].lower() == "captain":
+            # Compute pending approvals count for competitors
+            pending_count = 0
+            try:
+                current_user = UserRepository.get_user_by_id(self.user["id"])  # type: ignore
+                if current_user and current_user.team_id:
+                    from app.database.repositories import TeamJoinRequestRepository, TeamRepository
+                    requests = TeamJoinRequestRepository.get_pending_requests_for_team(current_user.team_id)
+                    team = TeamRepository.get_team_by_id(current_user.team_id)
+                    pending_members = [m for m in (team.members or []) if not m.is_approved and (m.role in ["member", "competitor"])]
+                    # Count only competitor/member requests/pending
+                    pending_count = len([r for r in requests if UserRepository.get_user_by_id(r.requester_user_id).role in ["member", "competitor"]]) + len(pending_members)
+            except Exception:
+                pending_count = 0
             self.tab_widget.addTab(self.members_tab, "Team Members")
-            self.tab_widget.addTab(self.join_requests_tab, "Join Requests")
+            self.tab_widget.addTab(self.join_requests_tab, f"Join Requests ({pending_count})")
         # Regular members only see join requests (to request to join a team)
         elif self.user["role"].lower() == "member":
             self.tab_widget.addTab(self.join_requests_tab, "Join Requests")
@@ -205,7 +218,19 @@ class MemberDashboard(QMainWindow):
         self.members_tab = self._create_team_members_tab()
         self.join_requests_tab = self._create_join_requests_tab()
         self.tab_widget.insertTab(members_idx, self.members_tab, "Team Members")
-        self.tab_widget.insertTab(join_idx, self.join_requests_tab, "Join Requests")
+        # Recompute pending count for label
+        pending_count = 0
+        try:
+            current_user = UserRepository.get_user_by_id(self.user["id"])  # type: ignore
+            if current_user and current_user.team_id:
+                from app.database.repositories import TeamJoinRequestRepository, TeamRepository
+                requests = TeamJoinRequestRepository.get_pending_requests_for_team(current_user.team_id)
+                team = TeamRepository.get_team_by_id(current_user.team_id)
+                pending_members = [m for m in (team.members or []) if not m.is_approved and (m.role in ["member", "competitor"])]
+                pending_count = len([r for r in requests if UserRepository.get_user_by_id(r.requester_user_id).role in ["member", "competitor"]]) + len(pending_members)
+        except Exception:
+            pending_count = 0
+        self.tab_widget.insertTab(join_idx, self.join_requests_tab, f"Join Requests ({pending_count})")
         self.tab_widget.insertTab(3, self.members_tab, "Team Members")
         self.tab_widget.removeTab(4)
         self.tab_widget.insertTab(4, self.join_requests_tab, "Join Requests")

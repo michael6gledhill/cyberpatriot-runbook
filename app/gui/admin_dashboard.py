@@ -498,8 +498,18 @@ class AdminDashboard(QMainWindow):
     def _handle_remove_member_id(self, user_id: int):
         """Handle remove member by ID."""
         try:
+            # Ask for confirmation, showing user details if available
+            user = UserRepository.get_user_by_id(user_id)
+            user_label = f"{user.name} <{user.email}>" if user else f"User ID {user_id}"
+            reply = QMessageBox.question(
+                self,
+                "Confirm Delete",
+                f"Are you sure you want to permanently delete {user_label}? This cannot be undone.",
+            )
+            if reply != QMessageBox.Yes:
+                return
             UserRepository.delete_user(user_id)
-            QMessageBox.information(self, "Success", "Member removed successfully.")
+            QMessageBox.information(self, "Success", "User account deleted.")
             self._refresh_members_table()
             AuditLogRepository.log_action(
                 self.admin_user["id"], "remove", "user", user_id, "User removed from team"
